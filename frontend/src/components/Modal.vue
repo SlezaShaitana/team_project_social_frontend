@@ -2,7 +2,7 @@
   <transition name="fade">
     <div
       class="modal"
-      v-show="isDisplay"
+      v-show="modelValue"
       tabindex="-1"
       @click.self="close"
       @keyup.esc="close"
@@ -27,7 +27,7 @@ import { ref, computed, onMounted, watch } from "vue";
 export default {
   name: "ComponentsModal",
   props: {
-    value: {
+    modelValue: {
       type: Boolean,
       default: false,
     },
@@ -39,7 +39,6 @@ export default {
     const isBodyOverflowing = ref(null);
     const value = ref(props.value);
 
-    const isDisplay = computed(() => props.value);
     const scrollBarWidth = computed(
       () => window.innerWidth - document.documentElement.clientWidth
     );
@@ -85,7 +84,6 @@ export default {
 
     return {
       modalRef,
-      isDisplay,
       close,
     };
   },

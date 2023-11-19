@@ -16,7 +16,7 @@
             :to="item.link"
             :class="{
               'main-layout__link--im':
-                item.link.name === 'Im' ||
+                (item.link.name === 'Im' && unreadedMessages?.count > 0) ||
                 (item.link.name === 'Friends' && requestsCount?.count),
               big: unreadedMessages?.count >= 100,
             }"
@@ -93,8 +93,8 @@ export default {
     });
 
     onMounted(() => {
-      store.dispatch('profile/friends/apiRequestsCount');
-      store.dispatch('profile/dialogs/apiUnreadedMessages');
+      store.dispatch("profile/friends/apiRequestsCount");
+      store.dispatch("profile/dialogs/apiUnreadedMessages");
       scrollPosition.value = window.scrollY;
     });
 

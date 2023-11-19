@@ -66,18 +66,17 @@
         :data-component="itemComponent"
         :wrap-class="'im-chat__message'"
         :root-tag="'section'"
-        @totop="onScrollToTop"
         @scroll.passive="onScroll"
         @tobottom="onScrollToBottom"
         ref="vslRef"
       >
-        <div class="im-chat__loader" :v-slot="header" v-show="fetching">
-          <div class="spinner" v-show="!isHistoryEndReached()" />
-          <div class="finished" v-show="isHistoryEndReached()">
-            {{ translationsLang.messageHistoryIsFinal }}
-          </div>
-        </div>
       </virtual-list>
+      <div class="im-chat__loader" :v-slot="header" v-show="fetching">
+        <div class="spinner" v-show="!isHistoryEndReached()" />
+        <div class="finished" v-show="isHistoryEndReached()">
+          {{ translationsLang.messageHistoryIsFinal }}
+        </div>
+      </div>
     </div>
 
     <form class="im-chat__enter" action="#" @submit.prevent="onSubmitMessage">
@@ -194,11 +193,19 @@ export default {
 
     onMounted(async () => {
       follow.value = true;
+      if (follow.value) setVirtualListToBottom();
       await axios.put(`dialogs/${props.info.id}`);
       if (!getInfo.value) {
         await dispatch("profile/info/apiInfo");
         getInfoChat();
       }
+
+      getMessageChat();
+
+      await $socket.connect();
+      $socket.subscribe("socket event", (messagePayload) => {
+        newMessage(messagePayload);
+      });
     });
 
     const getInfoChat = () => {
@@ -241,7 +248,7 @@ export default {
         if (!isHistoryEndReached()) {
           let [oldest] = messagesGrouped.value;
 
-          this.fetching = true;
+          fetching.value = true;
           await dispatch("profile/dialogs/loadOlderMessages");
           setVirtualListToOffset(1);
 
@@ -272,8 +279,27 @@ export default {
         });
     };
 
+    const newMessage = (message) => {
+      const payload = {
+        type: "MESSAGE",
+        recipientId: props.info.conversationPartner2,
+        data: {
+          time: null,
+          conversationPartner1: props.info.conversationPartner1,
+          conversationPartner2: props.info.conversationPartner2,
+          messageText: message.data.messageText,
+          readStatus: null,
+          dialogId: props.info.id,
+        },
+      };
+      commit("profile/dialogs/addOneMessage", payload.data);
+      getMessageChat();
+      lastId.value -= 1;
+      mes.value = "";
+    };
+
     const onScroll = () => {
-      follow.value = false;
+      follow.value = true;
     };
 
     const onScrollToBottom = () => {
@@ -287,9 +313,11 @@ export default {
     };
 
     const setVirtualListToBottom = () => {
-      if (vslRef.value) {
-        vslRef.value.scrollToBottom();
-      }
+      setTimeout(() => {
+        if (vslRef.value) {
+          vslRef.value.scrollToBottom();
+        }
+      }, 100);
     };
 
     const isHistoryEndReached = () => {
@@ -401,6 +429,24 @@ export default {
 
 .im-chat__message > div
   padding 20px
+
+active
+  &:after
+    content attr(data-push)
+    font-weight font-weight-regular
+    font-size font-size-super-small
+    width 15px
+    height 15px
+    color ui-cl-color-white-theme
+    background-color #E65151
+    border-radius border-half
+    display flex
+    align-items center
+    justify-content center
+    position relative
+    right 0px
+    bottom -7px
+    transform translateY(-50%)
 
 .im-chat__enter
   position relative

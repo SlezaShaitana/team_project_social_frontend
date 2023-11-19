@@ -5,14 +5,14 @@
         class="add-tags__input"
         type="text"
         :placeholder="translationsLang.newsTagPlaceholder"
-        v-model="tag"
+        v-model="tagsList"
         @input="searchTags"
         @keydown.enter="addTag(tag)"
         v-touppercase="10"
         ref="searchInputRef"
       />
 
-      <div v-if="tag.length > 0" class="add-tags__btn" @click="addTag(tag)">
+      <div v-if="tagsList.length > 0" class="add-tags__btn" @click="addTag(tag)">
         <img class="accept" src="@/assets/static/img/add.svg" />
       </div>
     </div>

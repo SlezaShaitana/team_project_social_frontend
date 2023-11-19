@@ -129,7 +129,7 @@
           <h6>{{ translationsLang.newsAddSettingsTimePublished }}</h6>
 
           <p>
-            {{ day }} {{ monthNames[month] }} {{ year }} г. в {{ dateTime }}
+            {{ day }} {{ monthNames[month] }} {{ year }} г. в {{ defaultTime }}
           </p>
         </div>
 
@@ -154,14 +154,19 @@
           <span>{{ translationsLang.newsAddQueuedTimeToPosted }}</span>
           <span
             >{{ day || "01" }} {{ monthNames[month] || "январь" }}
-            {{ year || "1970" }} г. в {{ dateTime || "00:00" }}</span
+            {{ year || "1970" }} г. в {{ defaultTime || "00:00" }}</span
           >
         </div>
-        <div class="vue-data-pickers-list">
+        <div class="data-pickers-list">
           <vue-date-picker
             v-model="date"
             type="date"
             :placeholder="translationsLang.newsAddDataPickedData"
+            :enable-time-picker="false"
+            :locale="translation.desc"
+            :cancelText="translationsLang.newsAddDataPickedButtonClose"
+            :selectText="translationsLang.newsAddDataPickedButtonSelect"
+            :dark="getTheme"
           >
           </vue-date-picker>
           <vue-date-picker
@@ -171,6 +176,11 @@
             value-type="format"
             type="time"
             :placeholder="translationsLang.newsAddDataPickedTime"
+            time-picker
+            :locale="translation.desc"
+            :cancelText="translationsLang.newsAddDataPickedButtonClose"
+            :selectText="translationsLang.newsAddDataPickedButtonSelect"
+            :dark="getTheme"
           >
           </vue-date-picker>
         </div>
@@ -178,12 +188,12 @@
 
       <template v-slot:actions>
         <div class="plaining-list__btns on_plaining">
-          <button class="post-btn-planing" @click.prevent="onPlaning">
+          <button class="post-btn-planing" @click.prevent="onPlaning()">
             {{ translationsLang.newsAddQueued }}
           </button>
           <button
             class="post-btn-planing plaining-hole"
-            @click.prevent="onCancelPlaning"
+            @click.prevent="onCancelPlaning()"
           >
             {{ translationsLang.cancel }}
           </button>
@@ -234,9 +244,8 @@ export default {
   },
 
   setup(props, { emit }) {
-    const store = useStore();
+    const { getters, state, dispatch, commit } = useStore();
     const route = useRoute();
-    const { getters, dispatch, commit } = store;
     const title = ref("");
     const content = ref("");
     const tags = ref([]);
@@ -250,7 +259,6 @@ export default {
     const day = ref("");
     const month = ref("");
     const monthNames = reactive([
-      "",
       "Январь",
       "Февраль",
       "Март",
@@ -290,26 +298,37 @@ export default {
       },
     ]);
 
+    const translation = computed(() => state.auth.languages.language);
+    const getTheme = computed(() => getters["global/alert/getTheme"]);
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const getStoragePostPhoto = computed(
       () => getters["global/storagePostPhoto/getStoragePostPhoto"]
     );
 
-    const fullDate = computed(() => {
+    const defaultTime = computed(() => {
       if (dateTime.value) {
+        return `${dateTime.value.hours}:${dateTime.value.minutes}`;
+      }
+      return "";
+    });
+
+    const fullDate = computed(() => {
+      if (dateTime.value && date.value) {
         const dateNow = new Date(date.value);
-        const time = dateTime.value.split(":");
-        dateNow.setHours(Number(time[0]));
-        dateNow.setMinutes(Number(time[1]));
-        return dateNow.toISOString();
+        dateNow.setHours(Number(dateTime.value.hours));
+        dateNow.setMinutes(Number(dateTime.value.minutes));
+        const offset = dateNow.getTimezoneOffset();
+        const localDate = new Date(dateNow.getTime() - offset * 60 * 1000);
+        return localDate.toISOString();
       }
       return "";
     });
 
     const currentDate = computed(() => {
       const date = new Date();
-      console.log(date.toISOString());
-      return date.toISOString();
+      const offset = date.getTimezoneOffset();
+      const localDate = new Date(date.getTime() - offset * 60 * 1000);
+      return localDate.toISOString();
     });
 
     const currentDay = computed(() => {
@@ -318,7 +337,7 @@ export default {
     });
 
     const currentMonth = computed(() => {
-      const month = this.monthNames[new Date().getMonth()];
+      const month = monthNames[new Date().getMonth()];
       return month;
     });
 
@@ -343,22 +362,23 @@ export default {
     const currentUtc = computed(() => {
       if (dateTime.value) {
         const dateNow = new Date(date.value);
-        const time = dateTime.value.split(":");
-        dateNow.setHours(Number(time[0]));
-        dateNow.setMinutes(Number(time[1]));
-        return dateNow;
+        dateNow.setHours(Number(dateTime.value.hours));
+        dateNow.setMinutes(Number(dateTime.value.minutes));
+        const offset = dateNow.getTimezoneOffset();
+        const localDate = new Date(dateNow.getTime() - offset * 60 * 1000);
+        return localDate;
       }
       return "";
     });
 
-    watch(dateTime.value, () => {
+    watch(dateTime, () => {
       lastDate.value = fullDate.value;
       currentUtcDateTime.value = currentUtc.value;
     });
 
-    watch(lastDate.value, (newDate) => {
+    watch(lastDate, (newDate) => {
       const dateNow = new Date(newDate);
-      day.value = dateNow.getUTCDateNow();
+      day.value = dateNow.getUTCDate();
       month.value = dateNow.getUTCMonth() + 1;
       year.value = dateNow.getUTCFullYear();
     });
@@ -493,12 +513,12 @@ export default {
       year.value = 1970;
       month.value = 1;
       day.value = 1;
-      dateTime.value = "00:00";
+      defaultTime.value = "00:00";
       modalShow.value = false;
     };
 
     const closeAddForm = () => {
-      emit("update:close-form");
+      emit("close-form");
     };
 
     return {
@@ -530,6 +550,9 @@ export default {
       currentMonth,
       currentYear,
       currentTime,
+      getTheme,
+      translation,
+      defaultTime,
       showHintButton,
       hideHints,
       onChangeTags,
@@ -695,7 +718,7 @@ export default {
     padding 15px 0 20px 0
 </style>
 <style lang="stylus" media="screen">
-@import '../../assets/stylus/base/vars.styl'
+@import '@/assets/stylus/base/vars.styl'
 .close_modal
   position relative
   top 8px

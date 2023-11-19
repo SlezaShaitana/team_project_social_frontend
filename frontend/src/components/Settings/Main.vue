@@ -241,7 +241,10 @@
           <option v-for="d in days" :key="d">{{ d }}</option>
         </select>
 
-        <select class="select user-info-form__select month" v-model="month">
+        <select
+          class="select user-info-form__select month"
+          v-model="selectedMonth"
+        >
           <option :value="null">none</option>
           <option v-for="month in months" :key="month.val" :value="month">
             {{ currentTranslations === "Русский" ? month.text : month.textEng }}
@@ -312,7 +315,8 @@ export default {
     const phone = ref("");
     const about = ref("");
     const day = ref(1);
-    const month = reactive({ val: 1, text: "Января", textEng: "January" });
+    const days = ref(null);
+    const selectedMonth = ref(null);
     const year = ref(2000);
     const months = reactive([
       { val: 0, text: "Января", textEng: "January" },
@@ -427,26 +431,24 @@ export default {
     const countryNames = computed(() =>
       countries.value.map((country) => country.title)
     );
-    const cityNames = computed(() => cities.value.map((city) => city.title));
-    const days = computed(() => {
-      return month.val === 1
-        ? year.value & 3 || (!(year.value % 25) && year.value & 15)
-          ? 28
-          : 29
-        : 30 + ((month.val + (month.val >> 3)) & 1);
+    const cityNames = computed(() => {
+      const itemCities = cities.value.map((city) => city.title);
+      return itemCities.sort();
     });
 
-   watch(openCountrySelect, (newVal) => {
+    watch(openCountrySelect, (newVal) => {
       openCountrySelect.value = newVal;
-
     });
 
-    watch(() => getInfo, (newVal) => {
-      if (!newVal) {
-        return;
+    watch(
+      () => getInfo,
+      (newVal) => {
+        if (!newVal) {
+          return;
+        }
+        setInfo();
       }
-      setInfo();
-    });
+    );
 
     watch(
       country,
@@ -456,19 +458,24 @@ export default {
             currentCountry.value = countries.value.find(
               (country) => country.title === newVal
             );
-            console.log(currentCountry.value.id)
             loadCities(currentCountry.value.id);
 
-            const foundCity = cities.value.find((item) => item.title === city.value);
-            if (
-              city.value &&
-              currentCountry.value &&
-              city.value !== "" &&
-              currentCountry.value.id !== foundCity.countryId
-            ) {
-              city.value = "";
-              country.value = "";
-            }
+            countries.value.forEach((itemCountry) => {
+              if (itemCountry.id === currentCountry.value.id) {
+                const foundCity = itemCountry.cities.find(
+                  (item) => item.title === city.value
+                );
+                if (
+                  city.value &&
+                  currentCountry.value &&
+                  city.value !== "" &&
+                  currentCountry.value.id !== foundCity.countryId
+                ) {
+                  city.value = "";
+                  country.value = "";
+                }
+              }
+            });
           }, 500);
         } else {
           city.value = "";
@@ -478,6 +485,17 @@ export default {
       },
       { immediate: true }
     );
+
+    watch(selectedMonth, (newVal) => {
+      selectedMonth.value = newVal;
+      days.value =
+        selectedMonth.value.val === 1
+          ? year.value & 3 || (!(year.value % 25) && year.value & 15)
+            ? 28
+            : 29
+          : 30 +
+            ((selectedMonth.value.val + (selectedMonth.value.val >> 3)) & 1);
+    });
 
     onMounted(() => {
       loadCountries();
@@ -529,18 +547,21 @@ export default {
         city.value = null;
         return;
       }
-      axios.get(`/geo/country/${countryId}/city`).then((response) => {
-        cities.value = response.data;
-      });
+
+      const itemCountry = countries.value.find((itemCountry) => itemCountry.id === countryId);
+      cities.value = itemCountry.cities;
       return countryId;
     };
 
     const submitHandler = async () => {
       let _birthDate = "none";
-      if (year.value && month && day.value) {
-        _birthDate = new Date(year.value, month.val, day.value).toISOString();
-      }
+      if (year.value && selectedMonth.value && day.value) {
+        const date = new Date(year.value, selectedMonth.value.val, day.value);
 
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        _birthDate = localDate.toISOString();
+      }
       if (!firstNameRef.value.validate() && !lastNameRef.value.validate()) {
         dispatch("global/alert/setAlert", {
           status: "error",
@@ -667,7 +688,7 @@ export default {
       if (getInfo.value.birthDate) {
         const birthDate = new Date(getInfo.value.birthDate);
         day.value = birthDate.getDate();
-        month.value = months[birthDate.getMonth()];
+        selectedMonth.value = months[birthDate.getMonth()];
         year.value = birthDate.getFullYear();
       }
       about.value = getInfo.value.about;
@@ -691,7 +712,6 @@ export default {
       phone,
       about,
       day,
-      month,
       year,
       months,
       src,
@@ -714,6 +734,7 @@ export default {
       cityNames,
       days,
       getStorage,
+      selectedMonth,
       closeEmojiList,
       toggleEmojiStatus,
       currentEmojiStatus,

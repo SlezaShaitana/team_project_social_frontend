@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import { ref, computed, watch, onMounted, getCurrentInstance } from "vue";
+import { ref, computed, onMounted, getCurrentInstance } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import useTranslations from "@/composables/useTranslations";
@@ -192,21 +192,21 @@ export default {
     const isAdminPage = computed(() => route.path.indexOf("admin") !== -1);
     const activeDialogId = computed(() => route.params.activeDialogId);
 
-    watch(
-      () => dialogs,
-      (newVal) => {
-        let unreadCount = 0;
-        newVal.forEach((item) => {
-          unreadCount += item.unreadCount;
-        });
-        commit("profile/dialogs/setUnreadedMessages", unreadCount);
-      }
-    );
+    // watch(
+      // () => dialogs,
+      // (newVal) => {
+      //   let unreadCount = 0;
+      //   newVal.forEach((item) => {
+      //     unreadCount += item.unreadCount;
+      //   });
+      //   commit("profile/dialogs/setUnreadedMessages", unreadCount);
+      // }
+    // );
 
     onMounted(async () => {
-      if (route.name !== "Im" && route.name !== "ImChat") {
-        dispatch("profile/dialogs/fetchDialogs");
-      }
+      // if (route.name !== "Im" && route.name !== "ImChat") {
+      //   dispatch("profile/dialogs/fetchDialogs");
+      // }
 
       dispatch("global/geo/apiGeo");
       if (!getInfo.value) {
@@ -216,7 +216,6 @@ export default {
       await $socket.connect();
       $socket.subscribe("socket event", (messagePayload) => {
         if (messagePayload.type === "NOTIFICATION") {
-          //unification
           messagePayload.data.sentTime = messagePayload.data.timestamp;
           commit("profile/notifications/addNotification", messagePayload.data);
           if (route.name !== "Push") {

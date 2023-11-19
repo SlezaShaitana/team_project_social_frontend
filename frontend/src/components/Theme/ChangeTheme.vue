@@ -110,16 +110,20 @@ export default {
       localStorage.setItem("theme", theme);
       if (selectedTheme.value === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
+        store.commit("global/alert/changeTheme", "dark");
       } else if (selectedTheme.value === "light") {
         document.documentElement.removeAttribute("data-theme");
+        store.commit("global/alert/changeTheme", "light");
       } else if (selectedTheme.value === "system") {
         if (
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)").matches
         ) {
           document.documentElement.setAttribute("data-theme", "dark");
+          store.commit("global/alert/changeTheme", "dark");
         } else {
           document.documentElement.removeAttribute("data-theme");
+          store.commit("global/alert/changeTheme", "light");
         }
       }
     };
@@ -128,16 +132,20 @@ export default {
       // установка начальной темы
       if (selectedTheme.value === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
+        store.commit("global/alert/changeTheme", "dark");
       } else if (selectedTheme.value === "light") {
         document.documentElement.removeAttribute("data-theme");
+        store.commit("global/alert/changeTheme", "light");
       } else if (selectedTheme.value === "system") {
         if (
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)").matches
         ) {
           document.documentElement.setAttribute("data-theme", "dark");
+          store.commit("global/alert/changeTheme", "dark");
         } else {
           document.documentElement.removeAttribute("data-theme");
+          store.commit("global/alert/changeTheme", "light");
         }
       }
 

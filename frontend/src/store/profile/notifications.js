@@ -19,11 +19,26 @@ export default {
         case 'COMMENT_COMMENT':
           return 'ответил на ваш комментарий';
         case 'FRIEND_REQUEST':
-          return 'от пользователя';
+          return '';
         case 'FRIEND_BIRTHDAY':
-          return 'празднует день рождение';
+          return '';
         case 'MESSAGE':
           return 'прислал сообщение';
+        case 'FRIEND_APPROVE':
+          return '';
+        case 'FRIEND_BLOCKED':
+          return '';
+        case 'FRIEND_UNBLOCKED':
+          return '';
+        case 'FRIEND_SUBSCRIBE':
+          return '';
+        case 'USER_BIRTHDAY':
+          return '';
+        case 'LIKE':
+          return '';
+        case 'SEND_EMAIL_MESSAGE':
+          return '';
+
       }
     },
   },
@@ -48,7 +63,9 @@ export default {
   },
 
   actions: {
-    async fetchNotifications({ commit }) {
+    async fetchNotifications({
+      commit
+    }) {
 
       // Отправка запроса на сервер с использованием текущей длины списка уведомлений
       const response = await notifications.get();
@@ -64,7 +81,9 @@ export default {
       // Обращение к API для получения информации об авторах
       const userInfoRequestPromises = Array.from(new Set(authorIds)).map(async (authorId) => {
         try {
-          const { data } = await axios.get(`/account/${authorId}`);
+          const {
+            data
+          } = await axios.get(`/account/${authorId}`);
           return data;
         } catch (error) {
           console.error(`Не нашёл аккаунт с id: ${authorId}:`, error);
@@ -86,7 +105,9 @@ export default {
 
       // Обработка уведомлений
       const mergedNotifications = notificationsList.map(async notification => {
-        const { authorId } = notification.data;
+        const {
+          authorId
+        } = notification.data;
         if (authorId) {
           const authorInfo = userInfo[authorId];
           return {
@@ -105,12 +126,17 @@ export default {
       commit('setNotifications', await Promise.all(mergedNotifications));
     },
 
-    async fetchNotificationsLength({ commit }) {
+    async fetchNotificationsLength({
+      commit
+    }) {
       const response = await notifications.getLength();
       commit('setNotificationsLength', response.data.data.count);
     },
 
-    async readedNotifications({ commit, dispatch }) {
+    async readedNotifications({
+      commit,
+      dispatch
+    }) {
       const response = await notifications.readed();
       commit('setReadedNotifications', response)
       await dispatch('fetchNotifications');

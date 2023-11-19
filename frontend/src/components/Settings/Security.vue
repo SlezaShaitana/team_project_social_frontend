@@ -2,7 +2,7 @@
   <div class="settings-security">
     <div class="settings-security__block">
       <div class="settings-security__mail">
-        <h3 class="settings-security__title">E-mail:</h3>
+        <h3 class="settings-security__title">Сменить E-mail:</h3>
 
         <input
           class="settings-security__value"
@@ -18,38 +18,53 @@
         </button>
       </div>
 
-      <h3 class="settings-security__title">
-        {{ translationsLang.settingPasswordLabel }}
-      </h3>
-      <input
-        class="settings-security__value not-first"
-        type="password"
+      <h3 class="settings-security__title">Сменить пароль:</h3>
+      <password-field-change-old
+        id="old-password"
+        v-model="passwordOld"
+        :v="v$.passwordOld"
+        info="info"
+        registration="registration"
+        :class="{
+          checked: v$.passwordOld.required,
+        }"
+      />
+      <password-field
+        id="change-password"
         v-model="password"
-        :placeholder="translationsLang.settingPasswordPlaceholder"
-        autocomplete="new-password"
+        :v="v$.password"
+        info="info"
+        registration="registration"
+        :class="{
+          checked: v$.password.required && v$.passwordTwo.sameAsPassword,
+        }"
       />
-      <input
-        class="settings-security__value"
-        type="password"
+      <password-repeat-field
+        id="change-repeat-password"
         v-model="passwordTwo"
-        :placeholder="translationsLang.settingPasswordPlaceholder2"
-        autocomplete="new-password"
+        :v="v$.passwordTwo"
+        :class="{
+          checked: v$.password.required && v$.passwordTwo.sameAsPassword,
+        }"
       />
-      <button
-        class="settings-security__btn"
-        @click.prevent="openModal('password')"
-      >
-        {{ translationsLang.settingBtnChange }}
-      </button>
+      <div class="change-password__action">
+        <button
+          type="submit"
+          class="settings-security__btn"
+          @click.prevent="openModal('password')"
+        >
+          {{ translationsLang.settingBtnChange }}
+        </button>
+      </div>
     </div>
 
     <modal v-model="modalShow">
       <p v-if="modalText">{{ modalText }}</p>
 
-      <template v-slot:actions>
-        <button @click="closeModal()">{{
+      <template :v-slot="actions">
+        <button-hover @click="closeModal">{{
           translationsLang.yes
-        }}</button>
+        }}</button-hover>
       </template>
     </modal>
   </div>
@@ -58,26 +73,56 @@
 <script>
 import { computed, onMounted, ref } from "vue";
 import { useStore } from "vuex";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import useTranslations from "@/composables/useTranslations";
-import Modal from "@/components/Modal.vue";
+import { useVuelidate } from "@vuelidate/core";
+import { required, sameAs, minLength } from "@vuelidate/validators";
+import PasswordField from "@/components/FormElements/PasswordFieldChange";
+import PasswordRepeatField from "@/components/FormElements/PasswordRepeatFieldChange";
+import PasswordFieldChangeOld from "@/components/FormElements/PasswordFieldChangeOld.vue";
+import Modal from "@/components/Modal";
 import auth from "@/requests/auth";
 
 export default {
   name: "SettingsSecurity",
-  components: { Modal },
+  components: {
+    Modal,
+    PasswordField,
+    PasswordRepeatField,
+    PasswordFieldChangeOld,
+  },
 
   setup() {
-    const store = useStore();
+    const { getters, dispatch } = useStore();
+    const route = useRoute();
     const router = useRouter();
     const modalShow = ref(false);
     const modalText = ref("");
     const changeEmail = ref("");
+    const passwordOld = ref("");
     const password = ref("");
     const passwordTwo = ref("");
+    const secret = ref("");
     const { translationsLang } = useTranslations();
 
-    const getInfo = computed(() => store.getters["profile/info/getInfo"]);
+    const rules = {
+      passwordOld: {
+        required,
+      },
+      password: {
+        required,
+        minLength: minLength(8),
+      },
+      passwordTwo: {
+        required,
+        sameAsPassword: sameAs("password"),
+        minLength: minLength(8),
+      },
+    };
+
+    const v$ = useVuelidate(rules, { password });
+
+    const getInfo = computed(() => getters["profile/info/getInfo"]);
 
     onMounted(() => {
       setTimeout(() => {
@@ -85,6 +130,8 @@ export default {
         password.value = "";
         passwordTwo.value = "";
       }, 300);
+
+      secret.value = route.params.secret || "";
     });
 
     const closeModal = () => {
@@ -99,7 +146,7 @@ export default {
             modalText.value = `${translationsLang.settingModalEmailChange} ${changeEmail.value}`;
             modalShow.value = true;
             setTimeout(() => {
-              store.dispatch("auth/api/logout").finally(() => {
+              dispatch("auth/api/logout").finally(() => {
                 router.push("/login");
               });
             }, 3000);
@@ -107,9 +154,17 @@ export default {
       }
 
       if (id === "password") {
+        if (v$.$invalid) {
+          v$.$touch();
+          return;
+        }
         if (password.value === passwordTwo.value) {
           await auth
-            .requestChangePasswordLink({ password: passwordTwo.value })
+            .requestChangePasswordLink({
+              oldPassword: passwordOld.value,
+              newPassword1: password.value,
+              newPassword2: passwordTwo.value,
+            })
             .then(() => {
               modalText.value = `${translationsLang.settingModalPasswordChange}`;
               modalShow.value = true;
@@ -118,13 +173,19 @@ export default {
       }
     };
 
+    // const passwordSet = () => {
+    //   dispatch('profile/account/passwordSet');
+    // };
+
     return {
       modalShow,
       modalText,
       changeEmail,
+      passwordOld,
       password,
       passwordTwo,
       translationsLang,
+      v$,
       getInfo,
       closeModal,
       openModal,
@@ -189,4 +250,7 @@ export default {
   font-size font-size-small-medium
   padding 10px 15px
   margin-bottom 15px
+
+.change-password__action
+  margin-top -15px
 </style>

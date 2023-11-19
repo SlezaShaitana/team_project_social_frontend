@@ -9,7 +9,7 @@ import chat from '@/plugins/websocket';
 import vClickOutside from 'click-outside-vue3';
 import useVuelidate from '@vuelidate/core';
 import vTooltip from 'v-tooltip';
-import VueToastify from 'vue-toastify';
+import Vue3Toastify from 'vue3-toastify';
 import scroll from './directives/scroll';
 import pattern from './directives/pattern';
 import VueDatePicker from '@vuepic/vue-datepicker';
@@ -29,7 +29,7 @@ app
   .use(vClickOutside)
   .use(useVuelidate)
   .use(vTooltip)
-  .use(VueToastify)
+  .use(Vue3Toastify, )
   .directive('scroll', scroll)
   .directive('pattern', pattern)
   .component('VueDatePicker', VueDatePicker)

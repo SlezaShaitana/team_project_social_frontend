@@ -25,7 +25,7 @@
       </div>
     </div>
 
-    <add-form v-else @submit-complete="closeForm" @close-form="closeForm()" />
+    <add-form v-else @submit-complete="closeForm" @close-form="closeForm" />
   </div>
 </template>
 

@@ -101,7 +101,7 @@ export default {
 
   &.me
     flex-direction row-reverse
-    max-width 450px
+    max-width 650px
     margin-left auto
 
     .im-chat__message-text
@@ -114,6 +114,7 @@ export default {
       margin-left 0
 
 .im-chat__message-text
+  word-wrap break-word
   background-color ui-cl-color-white-theme
   box-shadow 0px 4px 14px #e1e1e1
   border-radius border-big-radius
@@ -121,8 +122,10 @@ export default {
   color ui-cl-color-steel-gray
   font-size font-size-downdefault
   line-height 23px
+  overflow-x hidden
 
 .im-chat__message-time
+  min-width 105px
   font-size font-size-small
   color #BAC3D0
   margin-left 15px

@@ -220,7 +220,7 @@
         <button @click="onConfrim(targetId)">{{
           translationsLang.yes
         }}</button>
-        <button variant="red" bordered="bordered" @click="closeModal">
+        <button variant="red" bordered="bordered" @click="closeModal()">
           {{ translationsLang.cancel }}
         </button>
       </template>

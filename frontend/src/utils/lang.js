@@ -12,8 +12,9 @@ export default {
     passLogin: 'Пароль',
     passLoginEnter: 'Введите пароль',
     validatePass1: 'Пароль должен быть не менее',
-    validatePass2: 'символов. Сейчас он',
+    validatePass2: 'символов. Сейчас',
     passInfo: 'Пароль должен состоять из латинских букв, цифр и знаков. Обязательно содержать одну заглавную букву, одну цифру и состоять из 8 символов.',
+    passInfoChange: 'Пароль должен содержать не менее 8 символов.',
     passLevelFirst: 'слабый',
     passLevelSecond: 'средний',
     passLevelTree: 'надёжный',
@@ -169,6 +170,8 @@ export default {
     newsAddQueuedTimeToPosted: 'Публикация будет опубликована:',
     newsAddDataPickedData: 'Выберите дату',
     newsAddDataPickedTime: 'Выберите время',
+    newsAddDataPickedButtonSelect: 'Выбрать',
+    newsAddDataPickedButtonClose: 'Закрыть',
 
     newsTagPlaceholder: 'Начните вводить...',
 
@@ -260,7 +263,7 @@ export default {
     settingDeleteButton: 'Удалить профиль',
     settingDeleteCancel: 'Не удалять профиль, я хочу вернуться',
 
-    settingModalEmailChange: 'Адрес электронной почты успешно изменен на',
+    settingModalEmailChange: 'Инструкция по смене E-mail отправлена на', //'Адрес электронной почты успешно изменен на'
     settingModalPasswordChange: 'Пароль успешно изменен'
   },
 
@@ -434,6 +437,8 @@ export default {
     newsAddQueuedTimeToPosted: 'The publication will be published:',
     newsAddDataPickedData: 'Select a date',
     newsAddDataPickedTime: 'Choose a time',
+    newsAddDataPickedButtonSelect: 'Select',
+    newsAddDataPickedButtonClose: 'Cancel',
     newsTagPlaceholder: 'Start typing...',
 
     newsBlockPublishedTitle: 'published',

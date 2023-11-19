@@ -41,7 +41,7 @@ export default {
     return axios.post('auth/change-email-link', { email });
   },
 
-  requestChangePasswordLink(email) {
-    return axios.post('auth/change-password-link', { email });
+  requestChangePasswordLink(data) {
+    return axios.post('auth/change-password-link', data);
   },
 };

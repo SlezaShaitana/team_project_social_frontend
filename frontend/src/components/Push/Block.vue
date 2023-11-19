@@ -17,7 +17,7 @@
       >
         <span class="push__content-preview">{{ info.content }}</span>
         {{ getNotificationsTextType(info.notificationType) }}
-        «{{ info.author.firstName + " " + info.author.lastName }}»
+        {{ info.author.firstName + ' ' + info.author.lastName }}
       </router-link>
     </p>
 

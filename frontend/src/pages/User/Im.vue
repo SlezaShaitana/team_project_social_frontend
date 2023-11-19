@@ -9,8 +9,8 @@
         :class="{
           active:
             dialog.conversationPartner1 !== info.id
-              ? dialog.conversationPartner1
-              : dialog.conversationPartner2 === activeDialogId,
+              ? Number(activeDialogId) === dialog.conversationPartner1
+              : Number(activeDialogId) === dialog.conversationPartner2,
         }"
       >
         <a class="im-dailog__pic" href="#">
@@ -70,6 +70,30 @@
                   : null
               }}
             </a>
+            <!-- <span
+                :data-push="dialog.unreadCount"
+                :class="{'im-dialog__unread-count--count': dialog.unreadCount > 0}"
+              >
+              </span> -->
+            <div v-for="(message, index) in dialog.lastMessage" :key="index">
+              <span
+                v-if="
+                  index + 1 === dialog.unreadCount &&
+                  message.conversationPartner1 !== info.id &&
+                  message.readStatus === 'SENT'
+                "
+                :data-push="
+                  message.conversationPartner1 !== info.id &&
+                  message.readStatus === 'SENT'
+                    ? index + 1
+                    : null
+                "
+                :class="{
+                  'im-dialog__unread-count--count': dialog.unreadCount > 0,
+                }"
+              >
+              </span>
+            </div>
           </div>
           <div class="im-dialog__content">
             <p class="im-dialog__last" v-if="dialog.lastMessage">
@@ -114,7 +138,7 @@ export default {
   components: { ImChat, UnknowUser },
   props: {
     activeDialogId: {
-      type: String,
+      type: Number,
       required: false,
     },
   },
@@ -140,7 +164,9 @@ export default {
     const messages = computed(() => state.profile.dialogs.messages);
     const newMessage = computed(() => state.profile.dialogs.newMessage);
 
-    const currentActiveDialogId = computed(() => route.params.activeDialogId);
+    const currentActiveDialogId = computed(() =>
+      Number(route.params.activeDialogId)
+    );
     const conversationPartners = computed(() => {
       return dialogs.value
         .filter((dialog) => {
@@ -167,10 +193,10 @@ export default {
         }
         if (newVal) {
           messagesLoaded.value = false;
-          await dispatch(
-            "profile/dialogs/fetchMessages",
-            currentActiveDialogId.value
-          );
+          // await dispatch(
+          //   "profile/dialogs/fetchMessages",
+          //   currentActiveDialogId.value
+          // );
           messagesLoaded.value = true;
           const newActiveDialog = dispatch("profile/dialogs/fetchDialogs")
             .length
@@ -213,7 +239,8 @@ export default {
     );
 
     onMounted(() => {
-      console.log(info.value);
+      activeDialog.value = null;
+      // console.log(activeDialog.valueId)
     });
 
     onBeforeMount(() => {
@@ -246,8 +273,8 @@ export default {
       };
     };
 
-    const countPush = (unread) => {
-      return unread > 0 ? unread : null;
+    const countPush = () => {
+      // return unread > 0 ? unread : null;
     };
 
     const clickOnDialog = (dialog) => {
@@ -260,6 +287,7 @@ export default {
         name: "ImChat",
         params: { activeDialogId: partnerId },
       });
+      // this.apiUnreadedMessages();
     };
 
     const formatLastMessage = (time) => {
@@ -340,6 +368,10 @@ export default {
       background-color #c3c3c3
   &.active
     background-color #e1e1e1
+    outline 3px solid #21a45d;
+
+.im-dialog__name
+  margin-right 5px
 
 .im-dialog-online
   font-size font-size-super-upsmall
@@ -359,7 +391,7 @@ export default {
 .im
   display flex
   width 100%
-  height 'calc(100vh - %s)' % header-height
+  height calc(100vh - 175px)
   margin-bottom 30px
 
 .im__dialogs
@@ -383,5 +415,24 @@ export default {
 .im-dialog__info
   display flex
   align-items center
-  gap 10px
+  justify-content flex-start
+
+.im-dialog__unread-count
+  &--count
+    &:after
+      content attr(data-push)
+      font-weight font-weight-regular
+      font-size font-size-super-small
+      width 15px
+      height 15px
+      color ui-cl-color-white-theme
+      background-color #E65151
+      border-radius border-half
+      display flex
+      align-items center
+      justify-content center
+      position relative
+      right 0px
+      bottom -7px
+      transform translateY(-50%)
 </style>

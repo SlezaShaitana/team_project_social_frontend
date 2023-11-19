@@ -10,7 +10,7 @@
         :class="{ active: item === value }"
         @click="changePushSidebar(item)"
       >
-        {{ item }}123
+        {{ item }}
       </li>
     </ul>
   </div>

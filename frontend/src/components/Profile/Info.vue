@@ -677,7 +677,7 @@
               v-if="info.phone"
               :href="`tel: +7${info.phone}`"
             >
-              {{ phoneNumber(info.phone) }}
+              {{ formatPhoneNumber(info.phone) }}
             </a>
             <a class="profile-info__val" v-else>{{
               translationsLang.profileNotFilled
@@ -1045,10 +1045,6 @@ export default {
       return moment(time).fromNow();
     };
 
-    const phoneNumber = (phone) => {
-      return formatPhoneNumber(phone);
-    };
-
     const searchUsers = () => {
       dispatch("global/search/searchUsers");
     };
@@ -1079,7 +1075,6 @@ export default {
       showActions,
       textRef,
       translationsLang,
-      phoneNumber,
       dialogs,
       getUsersInfo,
       getWall,
@@ -1111,6 +1106,7 @@ export default {
       formatLastTime,
       searchUsers,
       getInfo,
+      formatPhoneNumber,
     };
   },
 };

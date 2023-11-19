@@ -33,23 +33,61 @@
                 class="push__content-name"
                 :to="getRouteByNotification(info?.data?.authorId)"
               >
-                <span class="push__content-preview">
-                  {{
-                    info?.data?.author?.firstName +
-                    " " +
-                    info?.data?.author?.lastName
-                  }}
-                </span>
-                {{ getNotificationsTextType(info?.data?.notificationType) }}
-                «{{ info?.data?.content }}»
+                <div
+                  v-if="
+                    info?.data?.notificationType !==
+                    ('FRIEND_REQUEST' ||
+                      'FRIEND_BIRTHDAY' ||
+                      'FRIEND_APPROVE' ||
+                      'FRIEND_BLOCKED' ||
+                      'FRIEND_UNBLOCKED' ||
+                      'FRIEND_SUBSCRIBE')
+                  "
+                >
+                  <span class="push__content-preview">
+                    {{
+                      info?.data?.author?.firstName +
+                      " " +
+                      info?.data?.author?.lastName
+                    }}
+                  </span>
+                  {{ getNotificationsTextType(info?.data?.notificationType) }}
+                  {{ info?.data?.content }}
+                </div>
+
+                <div
+                  v-else-if="
+                    info?.data?.notificationType !==
+                    ('USER_BIRTHDAY' || 'SEND_EMAIL_MESSAGE')
+                  "
+                >
+                  {{ getNotificationsTextType(info?.data?.notificationType) }}
+                  {{ info?.data?.content }}
+                  <span class="push__content-preview">
+                    {{
+                      info?.data?.author?.firstName +
+                      " " +
+                      info?.data?.author?.lastName
+                    }}
+                  </span>
+                </div>
+
+                <div v-else>
+                  {{ getNotificationsTextType(info?.data?.notificationType) }}
+                  {{ info?.data?.content }}
+                </div>
               </router-link>
-              <span class="push__time">{{ formatTime(info.data.sentTime) }}</span>
+              <span class="push__time">{{
+                formatTime(info.data.sentTime)
+              }}</span>
             </p>
           </div>
         </div>
         <div v-else>
           <div>
-            <p class="no__notifications">{{ translationsLang.notNotification }}</p>
+            <p class="no__notifications">
+              {{ translationsLang.notNotification }}
+            </p>
           </div>
         </div>
       </div>
@@ -123,26 +161,29 @@ export default {
       }
     });
 
-    watch(() => props.isOpen, (newVal) => {
-      if (newVal) {
-        dispatch("profile/notifications/fetchNotifications").then(() => {
-          loadVisibleNotifications();
-        });
-        if (getNotifications.value.length === 0) {
-          dispatch("profile/notifications/fetchNotifications");
+    watch(
+      () => props.isOpen,
+      (newVal) => {
+        if (newVal) {
+          dispatch("profile/notifications/fetchNotifications").then(() => {
+            loadVisibleNotifications();
+          });
+          if (getNotifications.value.length === 0) {
+            dispatch("profile/notifications/fetchNotifications");
+          }
+          listRef.value.scrollTop = 0;
+        } else {
+          dispatch("profile/notifications/fetchNotificationsLength");
+          visibleNotifications.value = [];
         }
-        listRef.value.scrollTop = 0;
-      } else {
-        dispatch("profile/notifications/fetchNotificationsLength");
-        visibleNotifications.value = [];
       }
-    });
+    );
 
     watch(
       () => shouldUpdateVisibleNotifications,
       (newValue, oldValue) => {
         if (newValue !== oldValue) {
-          visibleNotifications.value = [...getNotifications];
+          visibleNotifications.value = [...getNotifications.value];
         }
       }
     );
@@ -176,7 +217,10 @@ export default {
     };
 
     const loadVisibleNotifications = () => {
-      visibleNotifications.value = getNotifications.value.slice(0, showCount.value);
+      visibleNotifications.value = getNotifications.value.slice(
+        0,
+        showCount.value
+      );
     };
 
     const showMore = () => {
@@ -186,7 +230,7 @@ export default {
         startIndex + showCount.value
       );
       visibleNotifications.value = [
-        ...visibleNotifications,
+        ...visibleNotifications.value,
         ...newVisibleNotifications,
       ];
     };

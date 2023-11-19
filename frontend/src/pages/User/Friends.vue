@@ -561,7 +561,6 @@ export default {
 
     onMounted(() => {
       activeTab.value = calculateTabSelect.value;
-      console.log(friends.value);
       statusCodes.forEach((statusCode) => {
         dispatch("profile/friends/apiFriends", { statusCode });
       });
