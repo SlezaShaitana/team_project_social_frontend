@@ -159,6 +159,7 @@ export default {
       () => getters["global/search/getUsersQueryParams"]
     );
 
+    
     const info = computed(() => state.profile.info.info);
     const dialogs = computed(() => state.profile.dialogs.dialogs);
     const messages = computed(() => state.profile.dialogs.messages);
