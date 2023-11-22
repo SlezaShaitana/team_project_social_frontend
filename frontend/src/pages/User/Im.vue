@@ -138,7 +138,7 @@ export default {
   components: { ImChat, UnknowUser },
   props: {
     activeDialogId: {
-      type: Number,
+      type: String,
       required: false,
     },
   },
@@ -164,9 +164,7 @@ export default {
     const messages = computed(() => state.profile.dialogs.messages);
     const newMessage = computed(() => state.profile.dialogs.newMessage);
 
-    const currentActiveDialogId = computed(() =>
-      Number(route.params.activeDialogId)
-    );
+    const currentActiveDialogId = computed(() => route.params.activeDialogId);
     const conversationPartners = computed(() => {
       return dialogs.value
         .filter((dialog) => {
@@ -213,7 +211,6 @@ export default {
             );
             const dialogData = response.data;
             activeDialog.value = generateNewDialog(dialogData);
-            console.log(dialogData);
           }
         }
       },

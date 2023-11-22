@@ -139,7 +139,7 @@
             <img
               class="accept"
               src="@/assets/static/img/add.svg"
-              alt="img.svg"
+              alt="img.svg1"
             />
           </div>
           <div
@@ -157,7 +157,11 @@
             v-if="info.statusCode !== 'BLOCKED'"
           >
             <span>{{ translationsLang.profileAccountSendMessage }}</span>
-            <img class="svg-width" src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
+            <img
+              class="svg-width"
+              src="@/assets/static/img/sidebar/im.svg"
+              alt="img.svg"
+            />
           </div>
           <!-- Добавление в друзья/отмена -->
           <div
@@ -217,10 +221,12 @@
     <modal v-model="modalShow">
       <p v-if="modalText">{{ modalText }}</p>
       <template v-slot:actions>
-        <button @click="onConfrim(targetId)">{{
-          translationsLang.yes
-        }}</button>
-        <button variant="red" bordered="bordered" @click="closeModal()">
+        <button class="btn" @click="onConfrim(targetId)">
+          <span class="helper"></span>
+          {{ translationsLang.yes }}
+        </button>
+        <button class="btn btn--red btn--bordered" variant="red" bordered="bordered" @click="closeModal()">
+          <span class="helper"></span>
           {{ translationsLang.cancel }}
         </button>
       </template>
@@ -282,7 +288,7 @@ export default {
     const modalType = ref("delete");
     const showDropdown = ref(false);
     const userInfo = ref(null);
-    const blocked = ref(false);
+    const blocked = ref(props.blocked);
     const { translationsLang } = useTranslations();
 
     const dialogs = computed(() => getters["profile/dialogs/dialogs"]);
@@ -315,27 +321,27 @@ export default {
     const modalText = computed(() => {
       let text = "";
       if (modalType.value === "delete") {
-        text = `${translationsLang.friendsModalTextDelete} ${
+        text = `${translationsLang.value.friendsModalTextDelete} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
-        } ${translationsLang.friendsModalLastText}`;
+        } ${translationsLang.value.friendsModalLastText}`;
       } else if (modalType.value === "deleteSubscribe") {
-        text = `${translationsLang.friendsModalTextDeleteSub} ${
+        text = `${translationsLang.value.friendsModalTextDeleteSub} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
         }?`;
       } else if (modalType.value === "cancelFriend") {
-        text = `${translationsLang.friendsModalTextCancelFriend} ${
+        text = `${translationsLang.value.friendsModalTextCancelFriend} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
         }?`;
       } else if (modalType.value === "deleteModerator") {
-        text = `${translationsLang.friendsModalTextDeteleModerator} ${
+        text = `${translationsLang.value.friendsModalTextDeteleModerator} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
-        } ${translationsLang.friendsModalLastTextSecond}`;
+        } ${translationsLang.value.friendsModalLastTextSecond}`;
       } else if (modalType.value === "block") {
-        text = `${translationsLang.friendsModalTextBlocked} ${
+        text = `${translationsLang.value.friendsModalTextBlocked} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
         }?`;
       } else if (modalType.value === "unblock") {
-        text = `${translationsLang.friendsModalTextUnlock} ${
+        text = `${translationsLang.value.friendsModalTextUnlock} ${
           userInfo.value.firstName + " " + userInfo.value.lastName
         }?`;
       }

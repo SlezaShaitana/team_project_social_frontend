@@ -71,7 +71,7 @@
         ref="vslRef"
       >
       </virtual-list>
-      <div class="im-chat__loader" :v-slot="header" v-show="fetching">
+      <div class="im-chat__loader" v-show="fetching">
         <div class="spinner" v-show="!isHistoryEndReached()" />
         <div class="finished" v-show="isHistoryEndReached()">
           {{ translationsLang.messageHistoryIsFinal }}
@@ -99,6 +99,7 @@
 
 <script>
 import {
+  markRaw,
   computed,
   nextTick,
   onMounted,
@@ -142,7 +143,7 @@ export default {
     const follow = ref(false);
     const mes = ref("");
     const isUserViewHistory = ref(false);
-    const itemComponent = ref(ChatMessage);
+    const itemComponent = markRaw(ChatMessage);
     const fetching = ref(false);
     const lastId = ref(-1);
     const infoChatUser = ref(null);
