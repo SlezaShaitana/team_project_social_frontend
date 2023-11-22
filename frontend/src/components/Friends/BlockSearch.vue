@@ -138,7 +138,7 @@
             v-if="info.statusCode !== 'BLOCKED'"
           >
             <span>{{ translationsLang.profileAccountSendMessage }}</span>
-            <img src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
+            <img class="svg-width" src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
           </div>
           <div
             class="friends-block__actions-block delete"
@@ -560,4 +560,7 @@ export default {
     font-size 0
     width 15px
     height 15px
+
+  .svg-width
+    width 15px
 </style>
