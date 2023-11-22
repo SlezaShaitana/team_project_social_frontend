@@ -4,7 +4,7 @@ image: node:18.13.0
 stages:
   - build
   - deploy_docker
-  - deploy_docker_local
+  # - deploy_docker_local
   - deploy_prod
 
 build:
