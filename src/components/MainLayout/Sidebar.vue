@@ -5,7 +5,7 @@
     v-scroll="handleScroll"
   >
     <div class="wrapper__sidebar">
-      <transition>
+      <!-- <transition> -->
         <nav class="main-layout__nav">
           <router-link
             :title="translations === 'Русский' ? item.textEng : item.textEng"
@@ -37,7 +37,7 @@
             <span v-else>{{ item.text }}</span>
           </router-link>
         </nav>
-      </transition>
+      <!-- </transition> -->
     </div>
   </div>
 </template>

@@ -37,9 +37,9 @@
               {{ info.author.firstName + " " + info.author.lastName }}
             </router-link>
           </div>
-          <div class="comment-main__allactions-top" v-if="edit || deleted">
+          <div class="comment-main__allactions-top">
             <transition name="fade">
-              <div class="comment-main__actions">
+              <div class="comment-main__actions" v-if="edit || deleted">
                 <div
                   class="comment-main__icons-top"
                   v-if="edit"
