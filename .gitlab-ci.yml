@@ -4,13 +4,13 @@ image: node:18.13.0
 stages:
   - build
   - deploy_docker
-  - deploy_docker_local
+  # - deploy_docker_local
   - deploy_prod
 
 build:
   stage: build
-  # only:
-  #   - develop
+  only:
+    - master
   before_script:
     - yarn install
   script:
@@ -22,8 +22,8 @@ build:
 deploy_docker:
   image: docker:19.03.12
   stage: deploy_docker
-  # only:
-  #   - develop
+  only:
+    - master
   before_script:
     - docker logout
     - docker login -u skillboxgroup40 -p skillboxgroup40!

@@ -5,39 +5,37 @@
     v-scroll="handleScroll"
   >
     <div class="wrapper__sidebar">
-      <transition>
-        <nav class="main-layout__nav">
-          <router-link
-            :title="translations === 'Русский' ? item.textEng : item.textEng"
-            class="main-layout__link"
-            v-for="(item, index) in info"
-            :key="index"
-            :exact="item.exact"
-            :to="item.link"
-            :class="{
-              'main-layout__link--im':
-                (item.link.name === 'Im' && unreadedMessages?.count > 0) ||
-                (item.link.name === 'Friends' && requestsCount?.count),
-              big: unreadedMessages?.count >= 100,
-            }"
-            :data-push="
-              item.link.name === 'Im'
-                ? unreadedMessages?.count
-                : item.link.name === 'Friends'
-                ? requestsCount?.count
-                : false
-            "
-          >
-            <div class="simple-svg-wrapper">
-              <sidebar-icons :name="item.icon" />
-            </div>
-            <span v-if="!isAdminPage" class="sidebar__text">{{
-              translations === "Русский" ? item.text : item.textEng
-            }}</span>
-            <span v-else>{{ item.text }}</span>
-          </router-link>
-        </nav>
-      </transition>
+      <nav class="main-layout__nav">
+        <router-link
+          :title="translations === 'Русский' ? item.textEng : item.textEng"
+          class="main-layout__link"
+          v-for="(item, index) in info"
+          :key="index"
+          :exact="item.exact"
+          :to="item.link"
+          :class="{
+            'main-layout__link--im':
+              (item.link.name === 'Im' && unreadedMessages?.count > 0) ||
+              (item.link.name === 'Friends' && requestsCount?.count),
+            big: unreadedMessages?.count >= 100,
+          }"
+          :data-push="
+            item.link.name === 'Im'
+              ? unreadedMessages?.count
+              : item.link.name === 'Friends'
+              ? requestsCount?.count
+              : false
+          "
+        >
+          <div class="simple-svg-wrapper">
+            <sidebar-icons :name="item.icon" />
+          </div>
+          <span v-if="!isAdminPage" class="sidebar__text">{{
+            translations === "Русский" ? item.text : item.textEng
+          }}</span>
+          <span v-else>{{ item.text }}</span>
+        </router-link>
+      </nav>
     </div>
   </div>
 </template>
