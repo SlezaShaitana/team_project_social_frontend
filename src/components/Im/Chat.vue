@@ -51,7 +51,7 @@
         </span>
         <span class="user-status chat-isonline-isonline-lasttime" v-else>
           {{ translationsLang.messageStatusWasOnline }}
-          {{ formatLastTime(filteredUserInfo[0]?.lastOnlineTime) }}
+          {{ formatTimeLast(filteredUserInfo[0]?.lastOnlineTime) }}
         </span>
       </div>
     </div>
@@ -99,22 +99,22 @@
 
 <script>
 import {
-  markRaw,
-  computed,
-  nextTick,
-  onMounted,
   ref,
+  computed,
+  markRaw,
   watch,
+  onMounted,
   getCurrentInstance,
+  nextTick,
 } from "vue";
 import { useStore } from "vuex";
-import useTranslations from "@/composables/useTranslations";
-import UnknowUser from "@/Icons/UnknowUser.vue";
 import axios from "axios";
-import ChatMessage from "@/components/Im/ChatMessage.vue";
+import useTranslations from "@/composables/useTranslations";
 import VirtualList from "vue3-virtual-scroll-list";
+import UnknowUser from "@/Icons/UnknowUser.vue";
+import ChatMessage from "@/components/Im/ChatMessage.vue";
 import SubmitIcon from "@/Icons/SubmitIcon.vue";
-import moment from "moment";
+import dayjs from "dayjs";
 
 const makeHeader = (msgDate) => {
   return { id: `group-${msgDate}`, stubDate: true, date: msgDate };
@@ -137,10 +137,6 @@ export default {
 
   setup(props) {
     const { getters, dispatch, commit } = useStore();
-    const instance = getCurrentInstance();
-    const $socket = instance.appContext.config.globalProperties.$socket;
-    const messages = ref(props.messages);
-    const follow = ref(false);
     const mes = ref("");
     const isUserViewHistory = ref(false);
     const itemComponent = markRaw(ChatMessage);
@@ -148,7 +144,11 @@ export default {
     const lastId = ref(-1);
     const infoChatUser = ref(null);
     const messageDialog = ref([]);
+    const messages = ref(props.messages);
+    const follow = ref(false);
     const vslRef = ref(null);
+    const instance = getCurrentInstance();
+    const $socket = instance.appContext.config.globalProperties.$socket;
     const { translationsLang } = useTranslations();
 
     const getInfo = computed(() => getters["profile/info/getInfo"]);
@@ -156,6 +156,7 @@ export default {
     const messagesGrouped = computed(() => {
       let groups = [];
       let headerDate = null;
+
       for (let i = 0; i < props.messages.length; i++) {
         const msg = props.messages[i];
         const msgDate = new Date(msg.time).toDateString();
@@ -169,13 +170,13 @@ export default {
       }
       return groups;
     });
-    const getInfoConversationPartner = computed(() => {
-      return props.info?.conversationPartner1 === getInfo.value?.id
+    const getInfoConversationPartner = computed(() =>
+      props.info?.conversationPartner1 === getInfo.value?.id
         ? props.info?.conversationPartner2
         : props.info?.conversationPartner2 === getInfo.value?.id
         ? props.info?.conversationPartner1
-        : null;
-    });
+        : null
+    );
     const filteredUserInfo = computed(() =>
       props.userInfo?.filter(
         (user) => user.id === getInfoConversationPartner.value
@@ -186,13 +187,14 @@ export default {
       if (follow.value) setVirtualListToBottom();
     });
 
-    watch(getInfoConversationPartner, async (newValue, oldValue) => {
-      if (newValue !== oldValue) {
-        getMessageChat();
-      }
+    watch(getInfoConversationPartner, async () => {
+      getMessageChat();
     });
 
     onMounted(async () => {
+      // follow.value = true;
+      // if (follow.value) setVirtualListToBottom();
+      getMessageChat();
       follow.value = true;
       if (follow.value) setVirtualListToBottom();
       await axios.put(`dialogs/${props.info.id}`);
@@ -201,7 +203,9 @@ export default {
         getInfoChat();
       }
 
-      getMessageChat();
+      // nextTick(() => {
+      //   this.$el.scrollTop = this.$el.scrollHeight;
+      // });
 
       await $socket.connect();
       $socket.subscribe("socket event", (messagePayload) => {
@@ -221,6 +225,25 @@ export default {
         (user) => user.id === conversationPartnerId
       );
       infoChatUser.value = user;
+    };
+
+    const newMessage = (message) => {
+      const payload = {
+        type: "MESSAGE",
+        recipientId: props.info.conversationPartner2,
+        data: {
+          time: null,
+          conversationPartner1: props.info.conversationPartner1,
+          conversationPartner2: props.info.conversationPartner2,
+          messageText: message.data.messageText,
+          readStatus: null,
+          dialogId: props.info.id,
+        },
+      };
+      commit("profile/dialogs/addOneMessage", payload.data);
+      getMessageChat();
+      lastId.value -= 1;
+      mes.value = "";
     };
 
     const onSubmitMessage = () => {
@@ -250,7 +273,7 @@ export default {
           let [oldest] = messagesGrouped.value;
 
           fetching.value = true;
-          await dispatch("profile/dialogs/loadOlderMessages");
+          await dispatch("profile/dialogs/loadOlderMessages"); // нет такого действия
           setVirtualListToOffset(1);
 
           nextTick(() => {
@@ -280,23 +303,12 @@ export default {
         });
     };
 
-    const newMessage = (message) => {
-      const payload = {
-        type: "MESSAGE",
-        recipientId: props.info.conversationPartner2,
-        data: {
-          time: null,
-          conversationPartner1: props.info.conversationPartner1,
-          conversationPartner2: props.info.conversationPartner2,
-          messageText: message.data.messageText,
-          readStatus: null,
-          dialogId: props.info.id,
-        },
-      };
-      commit("profile/dialogs/addOneMessage", payload.data);
-      getMessageChat();
-      lastId.value -= 1;
-      mes.value = "";
+    const setVirtualListToBottom = () => {
+      setTimeout(() => {
+        if (vslRef.value) {
+          vslRef.value.scrollToBottom();
+        }
+      }, 100);
     };
 
     const onScroll = () => {
@@ -313,51 +325,46 @@ export default {
       }
     };
 
-    const setVirtualListToBottom = () => {
-      setTimeout(() => {
-        if (vslRef.value) {
-          vslRef.value.scrollToBottom();
-        }
-      }, 100);
-    };
-
     const isHistoryEndReached = () => {
-      getters["profile/dialogs/isHistoryEndReached"];
+      return getters["profile/dialogs/isHistoryEndReached"];
     };
 
-    const formatLastTime = (time) => {
-      return moment(time).fromNow();
+    const formatTimeLast = (time) => {
+      return dayjs(time).fromNow();
     };
+
     // const getDialogs = () => {
-    //   getters['profile/dialogs/getDialogs']
+    //   return getters['profile/dialogs/getDialogs'];
     // };
 
-    // const postMessage = () => {
-    //   dispatch('profile/dialogs/postMessage');
-    // };
-    // const fetchMessages = () => {
-    //   dispatch('profile/dialogs/fetchMessages');
-    // };
-    // const markReadedMessages = () => {
-    //   dispatch('profile/dialogs/markReadedMessages');
-    // };
+    // ...mapActions("profile/dialogs", [
+    //     "postMessage",
+    //     "fetchMessages",
+    //     "loadOlderMessages",
+    //     "markReadedMessages",
+    //   ]),
 
     return {
       mes,
       isUserViewHistory,
       itemComponent,
       fetching,
+      lastId,
+      infoChatUser,
       messageDialog,
       vslRef,
       translationsLang,
+      getInfo,
+      messagesGrouped,
+      getInfoConversationPartner,
       filteredUserInfo,
       onSubmitMessage,
       onScrollToTop,
+      getMessageChat,
       onScroll,
       onScrollToBottom,
-      setVirtualListToBottom,
       isHistoryEndReached,
-      formatLastTime,
+      formatTimeLast,
     };
   },
 };

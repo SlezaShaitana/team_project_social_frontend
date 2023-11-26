@@ -46,6 +46,7 @@ import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import vClickOutside from 'click-outside-vue3';
 import useTranslations from "@/composables/useTranslations";
+import changeLocale from "@/utils/changeLocale";
 import ArrowBottom from "@/Icons/ArrowBottom.vue";
 
 export default {
@@ -95,6 +96,7 @@ export default {
     function selectLanguage(lang) {
       selectedLanguage.value = lang;
       languageShow.value = false;
+      changeLocale(lang);
       store.commit("auth/languages/setLanguage", lang);
     }
 

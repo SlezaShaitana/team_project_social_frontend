@@ -67,7 +67,7 @@ import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import useTranslations from "@/composables/useTranslations";
-import moment from "moment";
+import dayjs from "dayjs";
 import ArrowBottom from "@/Icons/ArrowBottom.vue";
 import AddTags from "@/components/News/AddTags";
 
@@ -118,11 +118,11 @@ export default {
       const dataTags = updateTags.value;
       const dataTagsSplit = dataTags.map((tag) => tag.name);
       const dateFrom =
-        dateFrom === "null" ? 0 : moment().subtract(1, dateFrom).valueOf();
-      const dateTo = (dateTo.value = moment().format(
+        dateFrom === "null" ? 0 : dayjs().subtract(1, dateFrom).valueOf();
+      const dateTo = (dateTo.value = dayjs().format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       ));
-      const formattedDateFrom = moment(dateFrom).format(
+      const formattedDateFrom = dayjs(dateFrom).format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       );
       let searchQuery = {

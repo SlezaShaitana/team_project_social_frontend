@@ -9,17 +9,17 @@
 
     <div v-else class="im-chat__message-block" :class="{ me: isSentByMe }">
       <p class="im-chat__message-text">{{ source.messageText }}</p>
-      <span class="im-chat__message-time">{{
-        formatTime(source.time)
-      }}</span>
+      <span class="im-chat__message-time">
+        {{ formatTime(source.time) }}
+      </span>
     </div>
   </div>
 </template>
 
 <script>
-import moment from "moment";
 import { computed } from "vue";
 import { useStore } from "vuex";
+import dayjs from "dayjs";
 
 export default {
   name: "InfiniteLoadingItem",
@@ -40,7 +40,6 @@ export default {
     const { getters, state } = useStore();
 
     const info = computed(() => state.profile.info.info);
-    const getInfo = computed(() => getters["profile/info/getInfo"]);
 
     const messageConversation = computed(() => {
       return props.source?.conversationPartner1 === info.value?.id
@@ -58,14 +57,18 @@ export default {
         : false;
     });
 
+    const getInfo = () => {
+      return getters["profile/info/getInfo"];
+    };
+
     const formatTime = (time) => {
-      return moment(time). format("YYYY-MM-DD hh:mm");
+      return dayjs(time).format("YYYY-MM-DD hh:mm");
     };
 
     return {
-      getInfo,
       messageConversation,
       isSentByMe,
+      getInfo,
       formatTime,
     };
   },

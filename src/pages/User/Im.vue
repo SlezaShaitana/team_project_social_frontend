@@ -9,8 +9,8 @@
         :class="{
           active:
             dialog.conversationPartner1 !== info.id
-              ? Number(activeDialogId) === dialog.conversationPartner1
-              : Number(activeDialogId) === dialog.conversationPartner2,
+              ? activeDialogId === dialog.conversationPartner1
+              : activeDialogId === dialog.conversationPartner2,
         }"
       >
         <a class="im-dailog__pic" href="#">
@@ -70,11 +70,6 @@
                   : null
               }}
             </a>
-            <!-- <span
-                :data-push="dialog.unreadCount"
-                :class="{'im-dialog__unread-count--count': dialog.unreadCount > 0}"
-              >
-              </span> -->
             <div v-for="(message, index) in dialog.lastMessage" :key="index">
               <span
                 v-if="
@@ -101,8 +96,8 @@
                 dialog.lastMessage && dialog.lastMessage[0]?.messageText
               }}</span>
               <span class="im-dialog__last-time">{{
-                formatLastMessage(
-                  dialog.lastMessage && dialog.lastMessage[0]?.time
+                formattedLastTime(
+                  dialog.lastMessage[0]?.time
                 )
               }}</span>
             </p>
@@ -123,7 +118,7 @@
 </template>
 
 <script>
-import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onBeforeMount } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 // import ImDialog from '@/components/Im/Dialog';
@@ -131,7 +126,7 @@ import UnknowUser from "@/Icons/UnknowUser.vue";
 import ImChat from "@/components/Im/Chat";
 import dialogsApi from "@/requests/dialogs";
 import useTranslations from "@/composables/useTranslations";
-import moment from "moment";
+import dayjs from "dayjs";
 
 export default {
   name: "UserIm",
@@ -147,10 +142,15 @@ export default {
     const { getters, state, dispatch, commit } = useStore();
     const route = useRoute();
     const router = useRouter();
-    const activeDialogId = ref(props.activeDialogId);
     const activeDialog = ref(null);
+    const activeDialogId = ref(props.activeDialogId);
     const messagesLoaded = ref(false);
     const { translationsLang } = useTranslations();
+
+    const dialogs = computed(() => state.profile.dialogs.dialogs);
+    const messages = computed(() => state.profile.dialogs.messages);
+    const newMessage = computed(() => state.profile.dialogs.newMessage);
+    const info = computed(() => state.profile.info.info);
 
     const users = computed(() =>
       getters["global/search/getResultByIdSearch"]("users")
@@ -158,12 +158,6 @@ export default {
     const getUsersQueryParams = computed(
       () => getters["global/search/getUsersQueryParams"]
     );
-
-    
-    const info = computed(() => state.profile.info.info);
-    const dialogs = computed(() => state.profile.dialogs.dialogs);
-    const messages = computed(() => state.profile.dialogs.messages);
-    const newMessage = computed(() => state.profile.dialogs.newMessage);
 
     const currentActiveDialogId = computed(() => route.params.activeDialogId);
     const conversationPartners = computed(() => {
@@ -185,31 +179,23 @@ export default {
       activeDialogId,
       async (newVal) => {
         if (newVal) {
-          await dispatch(
-            "profile/dialogs/newDialogs",
-            currentActiveDialogId.value
-          );
+          await dispatch("profile/dialogs/newDialogs", newVal);
         }
         if (newVal) {
           messagesLoaded.value = false;
-          // await dispatch(
-          //   "profile/dialogs/fetchMessages",
-          //   currentActiveDialogId.value
-          // );
+          await dispatch("profile/dialogs/fetchMessages", newVal);
           messagesLoaded.value = true;
           const newActiveDialog = dispatch("profile/dialogs/fetchDialogs")
             .length
             ? dispatch("profile/dialogs/fetchDialogs").filter(
-                (d) => d.id === currentActiveDialogId.value
+                (d) => d.id === newVal
               )
             : [];
           if (newActiveDialog.length > 0) {
             [activeDialog.value] = newActiveDialog;
             activeDialog.value.unreadCount = 0;
           } else {
-            const response = await dialogsApi.newDialogs(
-              currentActiveDialogId.value
-            );
+            const response = await dialogsApi.newDialogs(newVal);
             const dialogData = response.data;
             activeDialog.value = generateNewDialog(dialogData);
           }
@@ -221,7 +207,7 @@ export default {
     watch(
       () => newMessage,
       (message) => {
-        // new message of partner
+        console.log(message);
         if (
           activeDialogId.value &&
           message.conversationPartner1 === activeDialogId.value
@@ -237,23 +223,18 @@ export default {
     );
 
     onMounted(() => {
-      activeDialog.value = null;
-      // console.log(activeDialog.valueId)
+      console.log(activeDialogId.value);
     });
 
     onBeforeMount(() => {
       setTimeout(() => {
-        onSearchUsers();
+        const searchQuery = {
+          ...getUsersQueryParams.value,
+          ids: conversationPartners.value,
+        };
+        dispatch("global/search/searchUsers", { payload: searchQuery });
       }, 1000);
     });
-
-    const onSearchUsers = () => {
-      const searchQuery = {
-        ...getUsersQueryParams.value,
-        ids: conversationPartners.value,
-      };
-      dispatch("global/search/searchUsers", { payload: searchQuery });
-    };
 
     const generateNewDialog = (dialogData) => {
       return {
@@ -280,56 +261,43 @@ export default {
         dialog.conversationPartner1 !== info.value.id
           ? dialog.conversationPartner1
           : dialog.conversationPartner2;
-      console.log(partnerId);
       router.push({
         name: "ImChat",
         params: { activeDialogId: partnerId },
       });
-      // this.apiUnreadedMessages();
+      dispatch("profile/dialogs/apiUnreadedMessages");
+      activeDialogId.value = partnerId;
     };
 
-    const formatLastMessage = (time) => {
-      return moment(time).fromNow();
+    const formattedLastTime = (time) => {
+      return dayjs(time).fromNow();
     };
 
-    // const setUnreadedMessages = () => {
-    //   commit('profile/dialogs/setUnreadedMessages');
-    // };
-    // const setNewMessage = () => {
-    //   commit('profile/dialogs/setNewMessage');
-    // };
-    // const setActiveDialogId = () => {
-    //   commit('profile/dialogs/setActiveDialogId');
-    // };
-    // const setDialogs = () => {
-    //   commit('profile/dialogs/setDialogs');
-    // };
-
-    // const getUsersInfo = () => {
-    //   getters["users/info/getUsersInfo"]
-    // };
-    // const getDialogs = () => {
-    //   getters["profile/dialogs/getDialogs"]
-    // };
-    // const getInfo = () => {
-    //   getters["profile/info/getInfo"]
-    // };
+    // ...mapMutations("profile/dialogs", [
+    //   "setUnreadedMessages",
+    //   "setNewMessage",
+    //   "setActiveDialogId",
+    // ]),
+    // ...mapMutations("profile/dialogs", ["setDialogs"]),
+    // ...mapGetters("users/info", ["getUsersInfo"]),
+    // ...mapGetters("profile/dialogs", ["getDialogs"]),
+    // ...mapGetters("profile/info", ["getInfo"]),
 
     return {
       activeDialog,
       messagesLoaded,
       translationsLang,
-      users,
-      info,
       dialogs,
       messages,
       newMessage,
+      info,
+      users,
+      formattedLastTime,
+      getUsersQueryParams,
       currentActiveDialogId,
       conversationPartners,
-      onSearchUsers,
       countPush,
       clickOnDialog,
-      formatLastMessage,
     };
   },
 };
@@ -414,6 +382,7 @@ export default {
   display flex
   align-items center
   justify-content flex-start
+
 
 .im-dialog__unread-count
   &--count

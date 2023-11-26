@@ -109,7 +109,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useStore } from "vuex";
 import useTranslations from "@/composables/useTranslations";
-import moment from "moment";
+import dayjs from "dayjs";
 import { getRouteByNotification } from "@/utils/notifications.utils.js";
 
 export default {
@@ -240,7 +240,7 @@ export default {
     };
 
     const formatTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
 
     return {

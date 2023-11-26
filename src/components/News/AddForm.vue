@@ -166,7 +166,7 @@
             :locale="translation.desc"
             :cancelText="translationsLang.newsAddDataPickedButtonClose"
             :selectText="translationsLang.newsAddDataPickedButtonSelect"
-            :dark="getTheme"
+            :dark="selectedTheme"
           >
           </vue-date-picker>
           <vue-date-picker
@@ -180,7 +180,7 @@
             :locale="translation.desc"
             :cancelText="translationsLang.newsAddDataPickedButtonClose"
             :selectText="translationsLang.newsAddDataPickedButtonSelect"
-            :dark="getTheme"
+            :dark="selectedTheme"
           >
           </vue-date-picker>
         </div>
@@ -280,6 +280,7 @@ export default {
     const currentUtcDateTime = ref(null);
     const photoRef = ref(null);
     const imagePath = ref("");
+    const selectedTheme = ref();
 
     const { translationsLang } = useTranslations();
 
@@ -371,6 +372,10 @@ export default {
       return "";
     });
 
+    watch(getTheme, (newVal) => {
+      changeTheme(newVal);
+    });
+
     watch(dateTime, () => {
       lastDate.value = fullDate.value;
       currentUtcDateTime.value = currentUtc.value;
@@ -402,11 +407,20 @@ export default {
       }
       lastDate.value = fullDate.value;
       currentUtcDateTime.value = currentUtc.value;
+      changeTheme(getTheme.value);
     });
 
     onBeforeUnmount(() => {
       editor.value.destroy();
     });
+
+    const changeTheme = (theme) => {
+      if (theme === "light") {
+        selectedTheme.value = false;
+      } else {
+        selectedTheme.value = true;
+      }
+    };
 
     const showHintButton = () => {
       if (step.value <= 5) {
@@ -550,7 +564,7 @@ export default {
       currentMonth,
       currentYear,
       currentTime,
-      getTheme,
+      selectedTheme,
       translation,
       defaultTime,
       showHintButton,

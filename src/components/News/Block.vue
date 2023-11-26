@@ -327,7 +327,7 @@ import Comments from "@/components/Comments/Index.vue";
 import vClickOutside from "click-outside-vue3";
 import useTranslations from "@/composables/useTranslations";
 import PostReactions from "@/components/PostReactions.vue";
-import moment from "moment";
+import dayjs from "dayjs";
 
 export default {
   name: "NewsBlock",
@@ -491,22 +491,22 @@ export default {
     };
 
     const formatTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
     const formatTimeChange = (timeChange) => {
-      return moment(timeChange).fromNow();
+      return dayjs(timeChange).fromNow();
     };
     const formatTimeLLLL = (time) => {
-      return moment(time).fromNow("LLLL");
+      return dayjs(time).fromNow("LLLL");
     };
     const formatPublisheLLLL = (publishe) => {
-      return moment(publishe).fromNow("LLLL");
+      return dayjs(publishe).fromNow("LLLL");
     };
     const formatTimeFrom = (time) => {
-      return moment(time).fromNow("from");
+      return dayjs(time).fromNow("from");
     };
     const formatTimeChangeFrom = (timeChange) => {
-      return moment(timeChange).fromNow("from");
+      return dayjs(timeChange).fromNow("from");
     };
 
     // const deletePost = () => {
