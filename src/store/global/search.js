@@ -10,9 +10,11 @@ export default {
     lastSearchUsersRequest: '',
     lastSearchNewsRequest: '',
     usersQueryParams: {},
+    usersQueryParamsRecomend: {},
     newsQueryParams: {},
     searchText: null,
     usersPagination: { total: 20, page: 1, size: 5 },
+    usersPaginationRecomend: { total: 20, page: 1, size: 5 },
     newsPagination: { total: 20, page: 1, size: 5 },
     tabs: [
       // {
@@ -35,6 +37,7 @@ export default {
       users: [],
       news: [],
     },
+    recomendationUsers: [],
     status: '',
   },
   getters: {
@@ -43,22 +46,27 @@ export default {
     tabSelect: (state) => state.tabSelect,
     getResult: (state) => state.result,
     getResultByIdSearch: (state) => (id) => state.result[id],
+    getRecomendationUsers: (state) => state.recomendationUsers,
     getStatus: (state) => state.status,
     getLastSearchUsersRequest: (state) => state.lastSearchUsersRequest,
     getLastSearchNewsRequest: (state) => state.lastSearchNewsRequest,
     getUsersQueryParams: (state) => state.usersQueryParams,
+    getUsersQueryParamsRecomend: (state) => state.usersQueryParamsRecomend,
     getNewsQueryParams: (state) => state.newsQueryParams,
     getUsersPagination: (state) => state.usersPagination,
+    getUsersPaginationRecomend: (state) => state.usersPaginationRecomend,
     getNewsPagination: (state) => state.newsPagination,
     authors: (state, getters, rootState) => rootState.global.authors.authors,
   },
   mutations: {
     setUsersPagination: (state, pagination) => (state.usersPagination = pagination),
+    setUsersPaginationRecomend: (state, pagination) => (state.usersPaginationRecomend = pagination),
     setNewsPagination: (state, pagination) => (state.newsPagination = pagination),
     setSearchText: (state, value) => (state.searchText = value),
     setLastSearchUsersRequest: (state, value) => (state.lastSearchUsersRequest = value),
     setLastSearchNewsRequest: (state, value) => (state.lastSearchNewsRequest = value),
     setUsersQueryParams: (state, value) => (state.usersQueryParams = value),
+    setUsersQueryParamsRecomend: (state, value) => (state.usersQueryParamsRecomend = value),
     setNewsQueryParams: (state, value) => (state.newsQueryParams = value),
     setTabSelect: (state, id) => (state.tabSelect = id),
     routePushWithQuery(state, id) {
@@ -72,6 +80,9 @@ export default {
     },
     setResult(state, result) {
       state.result[result.id] = result.value;
+    },
+    setRecomendations(state, data) {
+      state.recomendationUsers = data;
     },
   },
   actions: {
@@ -91,7 +102,19 @@ export default {
       commit('routePushWithQuery', id);
     },
 
-    async searchUsers({ commit }, { payload, }) {
+    async searchRecomendations({ commit }, { payload, }) {
+      const query = createQuery(payload);
+
+      const response = await search.recomendationFrends(query);
+      commit('setRecomendations', response.data);
+      commit('setUsersQueryParamsRecomend', payload);
+      commit('setLastSearchUsersRequest', payload);
+
+      const pagination = createPagination(response);
+      commit('setUsersPaginationRecomend', pagination);
+    },
+
+    async searchUsers({commit}, { payload }) {
       const query = createQuery(payload);
 
       const response = await search.users(query);

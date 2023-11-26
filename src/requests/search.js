@@ -10,6 +10,10 @@ export default {
 
     throw new TypeError('Недопустимое значение запроса');
   },
+
+  recomendationFrends(query) {
+    if (Array.isArray(query)) return axios.get(`http://localhost:8099/api/v1/account/search?${query.join('&')}&isDeleted=false&showFriends=false`)
+  },
   // Поиск постов по запросу
   posts(query) {
     if (Array.isArray(query))

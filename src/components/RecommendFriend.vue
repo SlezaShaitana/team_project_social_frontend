@@ -3,7 +3,7 @@
     <h3 class="recommend-block__title">
       {{ translationsLang.recommendBlockTitle }}
     </h3>
-    <ul v-if="usersRecomendation.length !== 0" class="recommend-block__list">
+    <ul v-if="recomendationUsers.length !== 0" class="recommend-block__list">
       <li
         class="recommend-block__item"
         v-for="user in sortedUsers"
@@ -82,15 +82,28 @@ export default {
     const possibleFriends = computed(() =>
       getters["profile/friends/getResultById"]("recommendations")
     );
-    const usersRecomendation = computed(() =>
-      getters["global/search/getResultByIdSearch"]("users")
+    // const usersRecomendation = computed(() =>
+    //   getters["global/search/getResultByIdSearch"]("users")
+    // );
+    const recomendationUsers = computed(() =>
+      getters["global/search/getRecomendationUsers"]
     );
-    const getUsersQueryParams = computed(
-      () => getters["global/search/getUsersQueryParams"]
+    const getUsersQueryParamsRecomend = computed(
+      () => getters["global/search/getUsersQueryParamsRecomend"]
     );
 
+    // const sortedUsers = computed(() => {
+    //   const usersCopy = [...usersRecomendation.value];
+    //   return usersCopy.sort((a, b) => {
+    //     const ratingA = getFriendRating(a.id);
+    //     const ratingB = getFriendRating(b.id);
+    //     return ratingB - ratingA;
+    //   });
+    // });
     const sortedUsers = computed(() => {
-      const usersCopy = [...usersRecomendation.value];
+      console.log(recomendationUsers.value);
+
+      const usersCopy = [...recomendationUsers.value];
       return usersCopy.sort((a, b) => {
         const ratingA = getFriendRating(a.id);
         const ratingB = getFriendRating(b.id);
@@ -98,6 +111,7 @@ export default {
       });
     });
     const getIdsPossibleFriends = computed(() => {
+      console.log(possibleFriends.value)
       if (possibleFriends.value) {
         return possibleFriends.value.map((friend) => friend.friendId);
       } else {
@@ -119,10 +133,12 @@ export default {
 
     const onSearchUsers = () => {
       const searchQuery = {
-        ...getUsersQueryParams.value,
+        ...getUsersQueryParamsRecomend.value,
         ids: getIdsPossibleFriends.value,
       };
-      dispatch("global/search/searchUsers", { payload: searchQuery });
+      console.log(searchQuery);
+      // dispatch("global/search/searchUsers", { payload: searchQuery });
+      dispatch("global/search/searchRecomendations", { payload: searchQuery });
     };
 
     const apiAddFriends = ({ id, statusCode }) => {
@@ -135,7 +151,8 @@ export default {
 
     return {
       translationsLang,
-      usersRecomendation,
+      // usersRecomendation,
+      recomendationUsers,
       sortedUsers,
       getFriendRating,
       apiAddFriends,
