@@ -97,7 +97,7 @@
 import { ref } from "vue";
 import { useStore } from "vuex";
 import useTranslations from "@/composables/useTranslations";
-import moment from "moment";
+import dayjs from "dayjs";
 import LikeComment from "@/components/LikeComment";
 import EditIcon from "@/Icons/EditIcon.vue";
 import DeleteComment from "@/Icons/DeleteNewsIcon.vue";
@@ -164,7 +164,7 @@ export default {
     };
 
     const formatTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
 
     return {

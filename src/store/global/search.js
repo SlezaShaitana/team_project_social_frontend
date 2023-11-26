@@ -72,7 +72,6 @@ export default {
     },
     setResult(state, result) {
       state.result[result.id] = result.value;
-      // Vue.set(state.result, result.id, result.value);
     },
   },
   actions: {
@@ -92,10 +91,10 @@ export default {
       commit('routePushWithQuery', id);
     },
 
-    async searchUsers({ commit }, { payload, myFriends = false }) {
+    async searchUsers({ commit }, { payload, }) {
       const query = createQuery(payload);
 
-      const response = await search.users(query, myFriends);
+      const response = await search.users(query);
       commit('setResult', {
         id: 'users',
         value: response.data.content,

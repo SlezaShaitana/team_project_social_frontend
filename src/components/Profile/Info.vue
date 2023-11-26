@@ -746,7 +746,7 @@ import QRCode from "qrcode-generator";
 import vClickOutside from "click-outside-vue3";
 import useTranslations from "@/composables/useTranslations";
 import formatPhoneNumber from "@/composables/usePhoneFormatter";
-import moment from "moment";
+import dayjs from "dayjs";
 
 export default {
   name: "ProfileInfo",
@@ -1042,7 +1042,7 @@ export default {
     };
 
     const formatLastTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
 
     const searchUsers = () => {

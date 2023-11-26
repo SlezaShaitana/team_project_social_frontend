@@ -17,6 +17,13 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import VueSelect from "vue-select";
 import EmojiPicker from "vue3-emoji-picker";
 import 'vue3-emoji-picker/css'
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/en';
+
+dayjs.extend(relativeTime);
+dayjs.locale('ru');
 
 const app = createApp(App);
 

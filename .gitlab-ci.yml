@@ -10,11 +10,12 @@ stages:
 build:
   stage: build
   only:
-    - master
+    - frontendvue3
   before_script:
     - yarn install
   script:
     - yarn build
+  when: manual   
   artifacts:
     paths:
       - dist
@@ -23,7 +24,7 @@ deploy_docker:
   image: docker:19.03.12
   stage: deploy_docker
   only:
-    - master
+    - frontendvue3
   before_script:
     - docker logout
     - docker login -u skillboxgroup40 -p skillboxgroup40!
@@ -31,6 +32,7 @@ deploy_docker:
     - docker build -f dockerfile -t skillboxgroup40/frontend-vue3 .
     - docker push skillboxgroup40/frontend-vue3
     - echo "Frontend deploy stage end"
+  when: manual 
   artifacts:
     paths:
       - dist

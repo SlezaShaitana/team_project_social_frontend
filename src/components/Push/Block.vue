@@ -28,7 +28,7 @@
 <script>
 import { computed } from "vue";
 import { useStore } from "vuex";
-import moment from "moment";
+import dayjs from "dayjs";
 import { getRouteByNotification } from "@/utils/notifications.utils";
 
 export default {
@@ -45,7 +45,7 @@ export default {
     );
 
     const formatSentTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
 
     return {

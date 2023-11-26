@@ -241,7 +241,7 @@ import { useRouter } from "vue-router";
 import vClickOutside from "click-outside-vue3";
 import useTranslations from "@/composables/useTranslations";
 import axios from "axios";
-import moment from "moment";
+import dayjs from "dayjs";
 import Modal from "@/components/Modal";
 import ActionsShow from "@/Icons/ActionsShow.vue";
 
@@ -513,11 +513,11 @@ export default {
     };
 
     const formatLastTime = (time) => {
-      return moment(time).fromNow();
+      return dayjs(time).fromNow();
     };
 
     const formatBirthDate = (date) => {
-      return moment(date).fromNow(true);
+      return dayjs(date).fromNow(true);
     };
 
     const openDialog = () => {

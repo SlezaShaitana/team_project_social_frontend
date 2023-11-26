@@ -32,7 +32,7 @@
 import { computed } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-import moment from "moment";
+import dayjs from "dayjs";
 import HeaderBlock from "@/components/MainLayout/Header.vue";
 
 export default {
@@ -50,10 +50,10 @@ export default {
     const router = useRouter();
 
     const tenDaysFromDeletion = computed(() =>
-      moment(props.info.deletionTimestamp).add(1, "days")
+      dayjs(props.info.deletionTimestamp).add(1, "days")
     );
     const formattedDeletionTimestamp = computed(() =>
-      moment(props.info.deletionTimestamp).format("DD.MM.YYYY HH:mm")
+      dayjs(props.info.deletionTimestamp).format("DD.MM.YYYY HH:mm")
     );
     const formattedTenDaysFromDeletion = computed(() =>
       tenDaysFromDeletion.value.format("DD.MM.YYYY HH:mm")
