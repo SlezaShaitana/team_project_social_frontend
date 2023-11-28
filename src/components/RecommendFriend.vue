@@ -131,6 +131,7 @@ export default {
         dispatch("profile/friends/apiAddFriends", { id, statusCode });
         return;
       }
+      
       return dispatch("profile/friends/apiAddFriends", { id, statusCode });
     };
 
