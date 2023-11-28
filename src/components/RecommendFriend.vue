@@ -90,8 +90,6 @@ export default {
     );
 
     const sortedUsers = computed(() => {
-      console.log(recomendationUsers.value.content);
-
       const usersCopy = [...recomendationUsers.value.content];
       return usersCopy.sort((a, b) => {
         const ratingA = getFriendRating(a.id);
@@ -131,8 +129,9 @@ export default {
       if (statusCode === null) {
         statusCode = "";
         dispatch("profile/friends/apiAddFriends", { id, statusCode });
+        return;
       }
-      dispatch("profile/friends/apiAddFriends", { id, statusCode });
+      return dispatch("profile/friends/apiAddFriends", { id, statusCode });
     };
 
     return {
