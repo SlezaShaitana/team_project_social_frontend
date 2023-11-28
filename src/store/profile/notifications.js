@@ -6,6 +6,8 @@ export default {
   state: {
     notifications: [],
     notificationsLength: 0,
+    userInfo: {},
+    size: 0,
   },
   getters: {
     getNotifications: (state) => state.notifications,
