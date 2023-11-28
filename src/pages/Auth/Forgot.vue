@@ -52,13 +52,12 @@ export default {
     const submitHandler = () => {
       if (v$.$invalid) {
         v$.$touch();
+        store.dispatch("global/alert/setAlert", {
+          status: "status",
+          text: "Такого email-адреса не существует",
+        });
         return;
       }
-
-      store.dispatch("global/alert/setAlert", {
-        status: "status",
-        text: "Такого email-адреса не существует",
-      });
 
       store
         .dispatch("profile/account/passwordRecovery", {
@@ -73,6 +72,10 @@ export default {
           });
 
           router.push({ name: "ForgotSuccess" });
+          store.dispatch("global/alert/setAlert", {
+          status: "success",
+          text: "Ваш пароль выслан на почту!",
+        });
         });
     };
 
