@@ -82,9 +82,6 @@ export default {
     const possibleFriends = computed(() =>
       getters["profile/friends/getResultById"]("recommendations")
     );
-    // const usersRecomendation = computed(() =>
-    //   getters["global/search/getResultByIdSearch"]("users")
-    // );
     const recomendationUsers = computed(() =>
       getters["global/search/getRecomendationUsers"]
     );
@@ -92,18 +89,10 @@ export default {
       () => getters["global/search/getUsersQueryParamsRecomend"]
     );
 
-    // const sortedUsers = computed(() => {
-    //   const usersCopy = [...usersRecomendation.value];
-    //   return usersCopy.sort((a, b) => {
-    //     const ratingA = getFriendRating(a.id);
-    //     const ratingB = getFriendRating(b.id);
-    //     return ratingB - ratingA;
-    //   });
-    // });
     const sortedUsers = computed(() => {
-      console.log(recomendationUsers.value);
+      console.log(recomendationUsers.value.content);
 
-      const usersCopy = [...recomendationUsers.value];
+      const usersCopy = [...recomendationUsers.value.content];
       return usersCopy.sort((a, b) => {
         const ratingA = getFriendRating(a.id);
         const ratingB = getFriendRating(b.id);
@@ -111,7 +100,6 @@ export default {
       });
     });
     const getIdsPossibleFriends = computed(() => {
-      console.log(possibleFriends.value)
       if (possibleFriends.value) {
         return possibleFriends.value.map((friend) => friend.friendId);
       } else {
@@ -136,8 +124,6 @@ export default {
         ...getUsersQueryParamsRecomend.value,
         ids: getIdsPossibleFriends.value,
       };
-      console.log(searchQuery);
-      // dispatch("global/search/searchUsers", { payload: searchQuery });
       dispatch("global/search/searchRecomendations", { payload: searchQuery });
     };
 
@@ -151,7 +137,6 @@ export default {
 
     return {
       translationsLang,
-      // usersRecomendation,
       recomendationUsers,
       sortedUsers,
       getFriendRating,
