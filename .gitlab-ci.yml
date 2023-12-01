@@ -27,8 +27,8 @@ deploy_docker:
   stage: deploy_docker
   only:
     # - master
-    # - testFrontend
-    - frontendvue3
+    - testFrontend
+    # - frontendvue3
   before_script:
     - docker logout
     - docker login -u skillboxgroup40 -p skillboxgroup40!
