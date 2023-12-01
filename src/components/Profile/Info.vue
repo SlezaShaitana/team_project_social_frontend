@@ -15,7 +15,8 @@
           <div v-if="info.emojiStatus === '0'" class="profile-info__emoji-item">
             <img src="/static/img/user/status_guru.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus1 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus1 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer1 }}
@@ -73,7 +74,8 @@
           >
             <img src="/static/img/user/status_new.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus2 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus2 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer2 }}
@@ -131,7 +133,8 @@
           >
             <img src="/static/img/user/status_escp.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus3 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus3 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer3 }}
@@ -189,7 +192,8 @@
           >
             <img src="/static/img/user/status_teacher.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus4 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus4 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer4 }}
@@ -247,7 +251,8 @@
           >
             <img src="/static/img/user/status_student.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus5 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus5 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer5 }}
@@ -305,7 +310,8 @@
           >
             <img src="/static/img/user/status_love.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus6 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus6 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer6 }}
@@ -559,7 +565,8 @@
                 @click.prevent="subscribe(info.friendId)"
               >
                 <img
-                  src="@/assets/static/img/sidebar/admin/comments.svg" alt ="img.svg"
+                  src="@/assets/static/img/sidebar/admin/comments.svg"
+                  alt="img.svg"
                 />
                 {{ translationsLang.profileAccountSubscribe }}
               </a>
@@ -569,7 +576,11 @@
                 class="profile-info__btn btn-send__message"
                 @click.prevent="acceptFriendRequest(info.friendId)"
               >
-                <img class="accept" src="@/assets/static/img/add.svg" alt="img.svg" />
+                <img
+                  class="accept"
+                  src="@/assets/static/img/add.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountAcceptRequests }}
               </a>
               <!-- Сообщение -->
@@ -595,7 +606,8 @@
               >
                 <img
                   class="filter-green"
-                  src="@/assets/static/img/security-system-unlock.svg" alt ="img.svg"
+                  src="@/assets/static/img/security-system-unlock.svg"
+                  alt="img.svg"
                 />
                 {{ translationsLang.profileAccountUnblocking }}
               </a>
@@ -605,7 +617,7 @@
                 class="profile-info__btn block btn-send__message"
                 @click.prevent="blockedUser(info.friendId)"
               >
-                <img src="@/assets/static/img/unblocked.svg" alt ="img.svg" />
+                <img src="@/assets/static/img/unblocked.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountBlocking }}
               </a>
               <!-- Добавление в друзья/отмена -->
@@ -640,7 +652,11 @@
                 class="profile-info__btn btn-send__message"
                 @click.prevent="addToFriend(info.friendId)"
               >
-                <img class="accept" src="@/assets/static/img/add.svg" alt="img.svg" />
+                <img
+                  class="accept"
+                  src="@/assets/static/img/add.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountAddFriend }}
               </a>
             </div>
@@ -848,13 +864,13 @@ export default {
     });
 
     onMounted(() => {
-      let searchQuery = {
+      const searchQuery = {
         ...getUsersQueryParams.value,
         page: page.value - 1,
         size: size.value,
       };
       if (users.value.length === 0) {
-        dispatch("global/search/searchUsers", searchQuery);
+        dispatch("global/search/searchUsers", { payload: searchQuery });
       }
     });
 

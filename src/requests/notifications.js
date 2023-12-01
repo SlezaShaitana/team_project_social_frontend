@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export default {
   get() {
-    return axios.get(`notifications`);
+    return axios.get(`notifications/page`);
   },
 
   readed() {

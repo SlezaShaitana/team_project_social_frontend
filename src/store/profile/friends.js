@@ -9,7 +9,7 @@ const dispatchSetAlert = (dispatch, text) =>
     root: true
   });
 
-const dispatchSearchUsers = (dispatch, users) => {
+const dispatchSearchUsers = (dispatch, users, searchQuery) => {
   if (!users) {
     users = {
       firstName: null,
@@ -20,7 +20,7 @@ const dispatchSearchUsers = (dispatch, users) => {
       city: null,
     };
   }
-  dispatch('global/search/searchUsers', users, {
+  dispatch('global/search/searchUsers', { users, payload: searchQuery }, {
     root: true,
   });
 };
@@ -150,20 +150,30 @@ export default {
 
     async apiDeleteFriends({
       dispatch
-    }, id) {
+    }, data) {
+      const {
+        id,
+        searchQuery
+      } = data;
       await friends.delete(id);
-      dispatch('global/search/searchUsers', 'global/search/getLastSearchUsersRequest', {
+      dispatch('global/search/searchUsers', {
+        payload: searchQuery
+      }, {
+        root: true
+      });
+      dispatch('global/search/getLastSearchUsersRequest', {
         root: true,
       });
     },
 
     async apiAddFriends({
       dispatch,
-      rootGetters
+      rootGetters,
     }, {
       id,
       statusCode,
-      isApprove = false
+      isApprove = false,
+      searchQuery,
     }) {
       // const _friend = getters.getResult.friends.find((fr) => fr.id === id);
       if (statusCode === 'REQUEST_TO') {
@@ -195,17 +205,18 @@ export default {
         dispatchSetAlert(dispatch, 'Этот пользователь заблокировал Вас!');
       } else dispatchSetAlert(dispatch, 'Заявка отправлена');
       dispatch('apiFriends', statusCode);
-      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest']);
+      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest'], searchQuery);
     },
 
     async apiSubscribe({
       dispatch,
       rootGetters
-    }, id) {
+    }, data) {
+      const { id, searchQuery } = data;
       await friends.addSubscribe(id);
       dispatchSetAlert(dispatch, 'Заявка отправлена');
       dispatch('apiFriends');
-      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest']);
+      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest'], searchQuery);
     },
 
     async apiRequest({

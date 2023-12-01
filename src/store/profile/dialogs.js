@@ -5,8 +5,13 @@ export default {
   state: {
     dialogs: [],
     unreadedMessages: 0, // total unreaded
-    messages: [], // sorted oldest->newest 0 is oldest
+    dialogData: {
+      messages: [], // sorted oldest->newest 0 is oldest
+      totalPages: null,
+    },
+    oldMessages: [], // sorted oldest->newest 0 is oldest
     totalMessages: null,
+    totalOldMessages: null,
     dialogsLoaded: false,
     activeDialogId: null,
     oldLastKnownMessageId: null,
@@ -15,7 +20,8 @@ export default {
   },
   getters: {
     getDialogs: (state) => state.dialogs,
-    getMessages: (state) => state.messages,
+    getMessages: (state) => state.dialogData,
+    getOldMessages: (state) => state.oldMessages,
     oldestKnownMessageId: (state) => (state.messages),
     activeDialog: (state) => state.dialogs.find((el) => el.id == state.activeDialogId),
     getActiveDialogId: (state) => state.activeDialogId,
@@ -26,7 +32,11 @@ export default {
   },
   mutations: {
     clearMessages(state) {
-      state.messages = [];
+      state.dialogData.messages = [];
+      state.dialogData.data = {};
+    },
+    clearOldMessages(state) {
+      state.oldMessages = [];
     },
 
     setUnreadedMessages: (state, unread) => (state.unreadedMessages = unread),
@@ -34,10 +44,16 @@ export default {
     setNewMessage: (state, newMessage) => (state.newMessage = newMessage),
     dialogsLoaded: (state) => (state.dialogsLoaded = true),
     setActiveDialogId: (state, value) => (state.activeDialogId = value),
-    addMessages: (state, { messages, total }) => {
-      state.messages = [...state.messages, ...messages];
-      state.messages.sort((a, b) => a.time - b.time);
+    addMessages: (state, { dataMessage, total }) => {
+      state.dialogData.totalPages = dataMessage.totalPages;
+      state.dialogData.messages = [...state.dialogData.messages, ...dataMessage.content];
+      state.dialogData.messages.sort((a, b) => a.time - b.time);
       state.totalMessages = total;
+    },
+    addOldMessages: (state, { oldMessages, total }) => {
+      state.oldMessages = [...state.oldMessages, ...oldMessages];
+      state.oldMessages.sort((a, b) => a.time - b.time);
+      state.totaloldMessages = total;
     },
 
     addOneMessage: (state, messagePayload) => {
@@ -69,13 +85,11 @@ export default {
     // Запрос: dialogs/messages?recipientId=${id}&page=0&size=1&sort=time,desc
     async fetchMessages({ commit }, dialogId) {
       const response = await dialogsApi.getMessages(dialogId);
-      if (!response.lastMessage) return;
-      const messages = [{
-        ...response.lastMessage,
-      }];
+      if (!response.data.content) return;
+      const dataMessage = response.data;
       commit('clearMessages');
       commit('addMessages', {
-        messages,
+        dataMessage,
         total: response.unreadCount,
       });
     },
@@ -104,6 +118,20 @@ export default {
       await dialogsApi.markReaded(id);
       await dispatch('fetchDialogs');
     },
+
+    async loadOlderMessages({commit}, payload) {
+      const {id, countPage} = payload;
+
+      const response = await dialogsApi.getOldMessages(id, countPage);
+      if (!response.data.content) return;
+      const oldMessages = response.data.content;
+      commit('clearOldMessages');
+      commit('addOldMessages', {
+        oldMessages,
+        total: response.unreadCount,
+      });
+    },
   },
 };
+
 

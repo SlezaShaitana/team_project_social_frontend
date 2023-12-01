@@ -82,8 +82,8 @@ export default {
     const possibleFriends = computed(() =>
       getters["profile/friends/getResultById"]("recommendations")
     );
-    const recomendationUsers = computed(() =>
-      getters["global/search/getRecomendationUsers"]
+    const recomendationUsers = computed(
+      () => getters["global/search/getRecomendationUsers"]
     );
     const getUsersQueryParamsRecomend = computed(
       () => getters["global/search/getUsersQueryParamsRecomend"]
@@ -128,10 +128,9 @@ export default {
     const apiAddFriends = ({ id, statusCode }) => {
       if (statusCode === null) {
         statusCode = "";
-        dispatch("profile/friends/apiAddFriends", { id, statusCode });
-        return;
+        return dispatch("profile/friends/apiAddFriends", { id, statusCode });
       }
-      
+
       return dispatch("profile/friends/apiAddFriends", { id, statusCode });
     };
 

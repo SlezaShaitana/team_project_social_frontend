@@ -96,9 +96,7 @@
                 dialog.lastMessage && dialog.lastMessage[0]?.messageText
               }}</span>
               <span class="im-dialog__last-time">{{
-                formattedLastTime(
-                  dialog.lastMessage[0]?.time
-                )
+                formattedLastTime(dialog.lastMessage[0]?.time)
               }}</span>
             </p>
           </div>
@@ -108,7 +106,11 @@
     </div>
 
     <div class="im__chat" v-if="activeDialog && messagesLoaded">
-      <im-chat :user-info="users" :info="activeDialog" :messages="messages" />
+      <im-chat
+        :user-info="users"
+        :info="activeDialog"
+        :messages-data="getMessages"
+      />
     </div>
 
     <div v-else class="no-dialog">
@@ -148,13 +150,13 @@ export default {
     const { translationsLang } = useTranslations();
 
     const dialogs = computed(() => state.profile.dialogs.dialogs);
-    const messages = computed(() => state.profile.dialogs.messages);
     const newMessage = computed(() => state.profile.dialogs.newMessage);
     const info = computed(() => state.profile.info.info);
 
     const users = computed(() =>
       getters["global/search/getResultByIdSearch"]("users")
     );
+    const getMessages = computed(() => getters["profile/dialogs/getMessages"]);
     const getUsersQueryParams = computed(
       () => getters["global/search/getUsersQueryParams"]
     );
@@ -180,8 +182,6 @@ export default {
       async (newVal) => {
         if (newVal) {
           await dispatch("profile/dialogs/newDialogs", newVal);
-        }
-        if (newVal) {
           messagesLoaded.value = false;
           await dispatch("profile/dialogs/fetchMessages", newVal);
           messagesLoaded.value = true;
@@ -288,16 +288,16 @@ export default {
       messagesLoaded,
       translationsLang,
       dialogs,
-      messages,
+      getMessages,
       newMessage,
       info,
       users,
-      formattedLastTime,
       getUsersQueryParams,
       currentActiveDialogId,
       conversationPartners,
       countPush,
       clickOnDialog,
+      formattedLastTime,
     };
   },
 };

@@ -6,7 +6,11 @@ export default {
   },
 
   getMessages(id) {
-    return axios.get(`dialogs/messages?recipientId=${id}&page=0&sort=time,asc`);
+    return axios.get(`dialogs/messages?recipientId=${id}&page=0&sort=time,desc`);
+  },
+  
+  getOldMessages(id, countPage) {
+    return axios.get(`dialogs/messages?recipientId=${id}&page=${countPage}&sort=time,desc`);
   },
 
   getDialogs() {

@@ -225,7 +225,12 @@
           <span class="helper"></span>
           {{ translationsLang.yes }}
         </button>
-        <button class="btn btn--red btn--bordered" variant="red" bordered="bordered" @click="closeModal()">
+        <button
+          class="btn btn--red btn--bordered"
+          variant="red"
+          bordered="bordered"
+          @click="closeModal()"
+        >
           <span class="helper"></span>
           {{ translationsLang.cancel }}
         </button>

@@ -7,12 +7,14 @@
           :key="user.id"
           :info="user"
           subscribe-button
+          :page="page"
+          :size="size"
         />
       </div>
 
       <pagination
         :count="getUsersPagination.totalElements"
-        v-model="page"
+        v-model:page="page"
         :per-page="size"
       />
     </search-block>
@@ -41,7 +43,9 @@ export default {
     const total = ref(20);
     const { translationsLang } = useTranslations();
 
-    const users = computed(() => getters["global/search/getResultByIdSearch"]("users"));
+    const users = computed(() =>
+      getters["global/search/getResultByIdSearch"]("users")
+    );
     const getUsersQueryParams = computed(
       () => getters["global/search/getUsersQueryParams"]
     );
@@ -55,24 +59,21 @@ export default {
         page: page.value - 1,
         size: size.value,
       };
-      dispatch("global/search/searchUsers", searchQuery);
+      dispatch("global/search/searchUsers", { payload: searchQuery });
     });
 
-    watch(
-      () => getUsersPagination,
-      () => {
-        total.value = getUsersPagination.value.total;
-      }
-    );
+    watch(getUsersPagination, () => {
+      total.value = getUsersPagination.value.total;
+    });
 
     onMounted(() => {
-      let searchQuery = {
+      const searchQuery = {
         ...getUsersQueryParams.value,
         page: page.value - 1,
         size: size.value,
       };
       if (users.value.length === 0) {
-        dispatch("global/search/searchUsers", searchQuery);
+        dispatch("global/search/searchUsers", { payload: searchQuery });
       }
     });
 

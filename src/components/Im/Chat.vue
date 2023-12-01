@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <form class="im-chat__enter" action="#" @submit.prevent="onSubmitMessage">
+    <form class="im-chat__enter" action="#" @submit.prevent="onSubmitMessage()">
       <input
         class="im-chat__enter-input"
         type="text"
@@ -89,7 +89,7 @@
       <button
         v-if="mes.length > 0"
         class="im-chat__enter-submit"
-        @click.prevent="onSubmitMessage"
+        @click.prevent="onSubmitMessage()"
       >
         <submit-icon />
       </button>
@@ -116,9 +116,9 @@ import ChatMessage from "@/components/Im/ChatMessage.vue";
 import SubmitIcon from "@/Icons/SubmitIcon.vue";
 import dayjs from "dayjs";
 
-const makeHeader = (msgDate) => {
-  return { id: `group-${msgDate}`, stubDate: true, date: msgDate };
-};
+// const makeHeader = (msgDate) => {
+//   return { id: `group-${msgDate}`, stubDate: true, date: msgDate };
+// };
 
 export default {
   name: "ImChat",
@@ -130,7 +130,7 @@ export default {
 
   props: {
     info: Object,
-    messages: Array,
+    messagesData: Object,
     online: Boolean,
     userInfo: Array,
   },
@@ -144,7 +144,8 @@ export default {
     const lastId = ref(-1);
     const infoChatUser = ref(null);
     const messageDialog = ref([]);
-    const messages = ref(props.messages);
+    // const messages = ref([]);
+    const numberPage = ref(1);
     const follow = ref(false);
     const vslRef = ref(null);
     const instance = getCurrentInstance();
@@ -152,24 +153,10 @@ export default {
     const { translationsLang } = useTranslations();
 
     const getInfo = computed(() => getters["profile/info/getInfo"]);
+    const getOldMessages = computed(
+      () => getters["profile/dialogs/getOldMessages"]
+    );
 
-    const messagesGrouped = computed(() => {
-      let groups = [];
-      let headerDate = null;
-
-      for (let i = 0; i < props.messages.length; i++) {
-        const msg = props.messages[i];
-        const msgDate = new Date(msg.time).toDateString();
-        if (msgDate !== headerDate) {
-          headerDate = msgDate;
-          groups.push(makeHeader(headerDate));
-        }
-        msg.isSentByMe = msg.authorId === getInfo.value.id;
-        msg.id = `message-${i}`; // добавляем уникальный ключ
-        groups.push(msg);
-      }
-      return groups;
-    });
     const getInfoConversationPartner = computed(() =>
       props.info?.conversationPartner1 === getInfo.value?.id
         ? props.info?.conversationPartner2
@@ -183,7 +170,7 @@ export default {
       )
     );
 
-    watch(messages, () => {
+    watch(props.messagesData.messages, () => {
       if (follow.value) setVirtualListToBottom();
     });
 
@@ -192,21 +179,19 @@ export default {
     });
 
     onMounted(async () => {
-      // follow.value = true;
-      // if (follow.value) setVirtualListToBottom();
       getMessageChat();
       follow.value = true;
-      if (follow.value) setVirtualListToBottom();
       await axios.put(`dialogs/${props.info.id}`);
       if (!getInfo.value) {
         await dispatch("profile/info/apiInfo");
         getInfoChat();
       }
 
-      // nextTick(() => {
-      //   this.$el.scrollTop = this.$el.scrollHeight;
-      // });
-
+      nextTick(() => {
+        if (vslRef.value) {
+          setVirtualListToBottom();
+        }
+      });
       await $socket.connect();
       $socket.subscribe("socket event", (messagePayload) => {
         newMessage(messagePayload);
@@ -270,18 +255,22 @@ export default {
     const onScrollToTop = async () => {
       if (vslRef.value) {
         if (!isHistoryEndReached()) {
-          let [oldest] = messagesGrouped.value;
+          if (numberPage.value <= props.messagesData.totalPages - 1) {
+            fetching.value = true;
+            await dispatch("profile/dialogs/loadOlderMessages", {
+              id: getInfoConversationPartner.value,
+              countPage: numberPage.value,
+            });
+            numberPage.value += 1;
+          } else {
+            return;
+          }
 
-          fetching.value = true;
-          await dispatch("profile/dialogs/loadOlderMessages"); // нет такого действия
-          setVirtualListToOffset(1);
+          const oldMessages = [...getOldMessages.value].reverse();
+          messageDialog.value = [...oldMessages, ...messageDialog.value];
 
           nextTick(() => {
-            let offset = 0;
-            for (const groupedMsg of messagesGrouped.value) {
-              if (groupedMsg.id === oldest.id) break;
-              offset += vslRef.value.getSize(groupedMsg.id);
-            }
+            let offset = oldMessages.reduce((sum) => sum + getHeightOfMessage(), 0);
 
             setVirtualListToOffset(offset);
             fetching.value = false;
@@ -290,17 +279,13 @@ export default {
       }
     };
 
+    const getHeightOfMessage = () => {
+      return 60;
+    };
+
     const getMessageChat = () => {
-      axios
-        .get(
-          `dialogs/messages?recipientId=${getInfoConversationPartner.value}&page=0&sort=time,asc`
-        )
-        .then((response) => {
-          messageDialog.value = response.data.content;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      const messages = [...props.messagesData.messages];
+      messageDialog.value = messages.reverse();
     };
 
     const setVirtualListToBottom = () => {
@@ -311,8 +296,14 @@ export default {
       }, 100);
     };
 
-    const onScroll = () => {
+    const onScroll = (event) => {
       follow.value = true;
+      const scrollTop = event.target.scrollTop;
+      const threshold = 10;
+
+      if (scrollTop <= threshold) {
+        onScrollToTop();
+      }
     };
 
     const onScrollToBottom = () => {
@@ -355,7 +346,7 @@ export default {
       vslRef,
       translationsLang,
       getInfo,
-      messagesGrouped,
+      getOldMessages,
       getInfoConversationPartner,
       filteredUserInfo,
       onSubmitMessage,
