@@ -235,7 +235,7 @@ export default {
             conversationPartner2: message.data.conversationPartner2,
             messageText: message.data.messageText,
             readStatus: null,
-            id: message.data.id,
+            id: message.data.dialogId,
           },
         };
         commit("profile/dialogs/setNewMessage", payload.data);
@@ -250,15 +250,15 @@ export default {
     const onSubmitMessage = () => {
       if (!mes.value.trim()) return;
       const payload = {
-        type: "MESSAGE",
+        type: 'MESSAGE',
         recipientId: props.info.conversationPartner2,
         data: {
-          time: dayjs(new Date()).utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
+          time: dayjs(new Date()).utc().format('YYYY-MM-DDTHH:mm:ss.SSSSSS[Z]'),
           conversationPartner1: props.info.conversationPartner1,
           conversationPartner2: props.info.conversationPartner2,
           messageText: mes.value,
           readStatus: null,
-          id: props.info.id,
+          dialogId: props.info.id
         },
       };
       commit("profile/dialogs/setSubmitMessage", payload.data);
