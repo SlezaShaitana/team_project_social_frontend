@@ -62,7 +62,7 @@ export default {
     };
 
     const formatTime = (time) => {
-      return dayjs(time).format("YYYY-MM-DD hh:mm");
+      return dayjs(time).format("YYYY-MM-DD HH:mm");
     };
 
     return {

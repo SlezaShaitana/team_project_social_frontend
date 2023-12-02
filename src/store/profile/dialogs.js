@@ -5,11 +5,10 @@ export default {
   state: {
     dialogs: [],
     unreadedMessages: 0, // total unreaded
-    dialogData: {
+    oldMessages: {
       messages: [], // sorted oldest->newest 0 is oldest
       totalPages: null,
     },
-    oldMessages: [], // sorted oldest->newest 0 is oldest
     totalMessages: null,
     totalOldMessages: null,
     dialogsLoaded: false,
@@ -17,10 +16,13 @@ export default {
     oldLastKnownMessageId: null,
     isHistoryEndReached: false,
     newMessage: {},
+    mySubmitMessage: {},
+    allMessages: [],
   },
   getters: {
     getDialogs: (state) => state.dialogs,
-    getMessages: (state) => state.dialogData,
+    getNewMessage: (state) => state.newMessage,
+    getSubmitMessage: (state) => state.mySubmitMessage,
     getOldMessages: (state) => state.oldMessages,
     oldestKnownMessageId: (state) => (state.messages),
     activeDialog: (state) => state.dialogs.find((el) => el.id == state.activeDialogId),
@@ -31,29 +33,32 @@ export default {
     isHistoryEndReached: (state) => state.isHistoryEndReached,
   },
   mutations: {
-    clearMessages(state) {
-      state.dialogData.messages = [];
-      state.dialogData.data = {};
-    },
     clearOldMessages(state) {
-      state.oldMessages = [];
+      state.oldMessages.messages = [];
+      state.oldMessages.totalPages = null;
     },
 
     setUnreadedMessages: (state, unread) => (state.unreadedMessages = unread),
     setDialogs: (state, dialogs) => (state.dialogs = dialogs),
-    setNewMessage: (state, newMessage) => (state.newMessage = newMessage),
+    setNewMessage: (state, newMessage) => {
+      state.newMessage = newMessage;
+      state.allMessages = [...state.allMessages, newMessage];
+    },
+    setSubmitMessage: (state, submitMessage) => {
+      state.mySubmitMessage = submitMessage;
+      state.allMessages = [...state.allMessages, submitMessage];
+    },
     dialogsLoaded: (state) => (state.dialogsLoaded = true),
     setActiveDialogId: (state, value) => (state.activeDialogId = value),
-    addMessages: (state, { dataMessage, total }) => {
-      state.dialogData.totalPages = dataMessage.totalPages;
-      state.dialogData.messages = [...state.dialogData.messages, ...dataMessage.content];
-      state.dialogData.messages.sort((a, b) => a.time - b.time);
-      state.totalMessages = total;
-    },
-    addOldMessages: (state, { oldMessages, total }) => {
-      state.oldMessages = [...state.oldMessages, ...oldMessages];
-      state.oldMessages.sort((a, b) => a.time - b.time);
-      state.totaloldMessages = total;
+    addOldMessages: (state, {
+      oldMessages,
+      total
+    }) => {
+      state.allMessages = oldMessages.content;
+      state.oldMessages.totalPages = oldMessages.totalPages;
+      state.oldMessages.messages = oldMessages.content;
+      state.oldMessages.messages.sort((a, b) => a.time - b.time);
+      state.totalOldMessages = total;
     },
 
     addOneMessage: (state, messagePayload) => {
@@ -70,33 +75,26 @@ export default {
   actions: {
     // Создание диалога. Если нет диалога - создаём, если есть - получаем;
     // Запрос: axios.get(`/dialogs/recipientId/${id}`);
-    async newDialogs({ commit }, recipientId) {
+    async newDialogs({
+      commit
+    }, recipientId) {
       try {
         const response = await dialogsApi.newDialogs(recipientId);
         if (!response.data) return;
-        const { data } = response.data || {}; // добавляем проверку на существование content
+        const {
+          data
+        } = response.data || {}; // добавляем проверку на существование content
         commit('selectDialog', data);
       } catch (err) {
         console.log(err);
       }
     },
 
-    // Получаем сообщения диалога по dialogId
-    // Запрос: dialogs/messages?recipientId=${id}&page=0&size=1&sort=time,desc
-    async fetchMessages({ commit }, dialogId) {
-      const response = await dialogsApi.getMessages(dialogId);
-      if (!response.data.content) return;
-      const dataMessage = response.data;
-      commit('clearMessages');
-      commit('addMessages', {
-        dataMessage,
-        total: response.unreadCount,
-      });
-    },
-
     // Получаем все диалоги:
     // Запрос: /dialogs?page=0&sort=unreadCount,desc
-    async fetchDialogs({ commit }) {
+    async fetchDialogs({
+      commit
+    }) {
       try {
         const response = await dialogsApi.getDialogs();
         if (response.data?.content?.length === 0) return;
@@ -108,23 +106,37 @@ export default {
       }
     },
 
-    async apiUnreadedMessages({ commit, dispatch }) {
-      const { data } = await dialogsApi.unreadedMessages();
+    async apiUnreadedMessages({
+      commit,
+      dispatch
+    }) {
+      const {
+        data
+      } = await dialogsApi.unreadedMessages();
       commit('setUnreadedMessages', data);
       await dispatch('fetchDialogs');
     },
 
-    async markReadedMessages({ dispatch }, _, id) {
+    async markReadedMessages({
+      dispatch
+    }, _, id) {
       await dialogsApi.markReaded(id);
       await dispatch('fetchDialogs');
     },
 
-    async loadOlderMessages({commit}, payload) {
-      const {id, countPage} = payload;
+    // Получаем сообщения диалога по dialogId
+    // Запрос: dialogs/messages?recipientId=${id}&page=${countPage}&size=1&sort=time,desc
+    async loadOlderMessages({
+      commit
+    }, payload) {
+      const {
+        id,
+        countPage
+      } = payload;
 
       const response = await dialogsApi.getOldMessages(id, countPage);
       if (!response.data.content) return;
-      const oldMessages = response.data.content;
+      const oldMessages = response.data;
       commit('clearOldMessages');
       commit('addOldMessages', {
         oldMessages,
@@ -133,5 +145,3 @@ export default {
     },
   },
 };
-
-

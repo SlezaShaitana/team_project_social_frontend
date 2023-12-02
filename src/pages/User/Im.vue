@@ -109,7 +109,6 @@
       <im-chat
         :user-info="users"
         :info="activeDialog"
-        :messages-data="getMessages"
       />
     </div>
 
@@ -146,6 +145,7 @@ export default {
     const router = useRouter();
     const activeDialog = ref(null);
     const activeDialogId = ref(props.activeDialogId);
+    const numberPage = ref(0);
     const messagesLoaded = ref(false);
     const { translationsLang } = useTranslations();
 
@@ -156,7 +156,7 @@ export default {
     const users = computed(() =>
       getters["global/search/getResultByIdSearch"]("users")
     );
-    const getMessages = computed(() => getters["profile/dialogs/getMessages"]);
+    // const getMessages = computed(() => getters["profile/dialogs/getMessages"]);
     const getUsersQueryParams = computed(
       () => getters["global/search/getUsersQueryParams"]
     );
@@ -183,7 +183,7 @@ export default {
         if (newVal) {
           await dispatch("profile/dialogs/newDialogs", newVal);
           messagesLoaded.value = false;
-          await dispatch("profile/dialogs/fetchMessages", newVal);
+          await dispatch("profile/dialogs/loadOlderMessages", { id: newVal, countPage: numberPage.value });
           messagesLoaded.value = true;
           const newActiveDialog = dispatch("profile/dialogs/fetchDialogs")
             .length
@@ -288,7 +288,7 @@ export default {
       messagesLoaded,
       translationsLang,
       dialogs,
-      getMessages,
+      // getMessages,
       newMessage,
       info,
       users,

@@ -153,7 +153,7 @@ export default {
     }, data) {
       const {
         id,
-        searchQuery
+        searchQuery = {},
       } = data;
       await friends.delete(id);
       dispatch('global/search/searchUsers', {

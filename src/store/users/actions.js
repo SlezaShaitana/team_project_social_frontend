@@ -8,7 +8,7 @@ export default {
     }, data) {
       const {
         id,
-        searchQuery
+        searchQuery = {}
       } = data;
       const response = await friends.blockedUser(id);
       dispatch(
@@ -38,7 +38,7 @@ export default {
     }, data) {
       const {
         id,
-        searchQuery
+        searchQuery = {}
       } = data;
       const response = await friends.unblockUser(id);
       dispatch(

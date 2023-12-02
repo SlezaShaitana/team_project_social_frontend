@@ -130,7 +130,7 @@ export default {
 
   props: {
     info: Object,
-    messagesData: Object,
+    // messagesData: Object,
     online: Boolean,
     userInfo: Array,
   },
@@ -146,6 +146,7 @@ export default {
     const messageDialog = ref([]);
     // const messages = ref([]);
     const numberPage = ref(1);
+    const isProcessing = ref(false);
     const follow = ref(false);
     const vslRef = ref(null);
     const instance = getCurrentInstance();
@@ -155,6 +156,12 @@ export default {
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const getOldMessages = computed(
       () => getters["profile/dialogs/getOldMessages"]
+    );
+    const getNewMessage = computed(
+      () => getters["profile/dialogs/getNewMessage"]
+    );
+    const getSubmitMessage = computed(
+      () => getters["profile/dialogs/getSubmitMessage"]
     );
 
     const getInfoConversationPartner = computed(() =>
@@ -170,16 +177,12 @@ export default {
       )
     );
 
-    watch(props.messagesData.messages, () => {
-      if (follow.value) setVirtualListToBottom();
-    });
-
     watch(getInfoConversationPartner, async () => {
-      getMessageChat();
+      loadOldMessagesChat();
     });
 
     onMounted(async () => {
-      getMessageChat();
+      loadOldMessagesChat();
       follow.value = true;
       await axios.put(`dialogs/${props.info.id}`);
       if (!getInfo.value) {
@@ -187,14 +190,22 @@ export default {
         getInfoChat();
       }
 
-      nextTick(() => {
-        if (vslRef.value) {
-          setVirtualListToBottom();
-        }
-      });
       await $socket.connect();
       $socket.subscribe("socket event", (messagePayload) => {
-        newMessage(messagePayload);
+        if (messagePayload.type === "MESSAGE") {
+          newMessage(messagePayload);
+        } else if (messagePayload.type === "NOTIFICATION") {
+          return;
+          // commit("profile/notifications/setNotifications", messagePayload);
+        }
+      });
+      
+      nextTick(() => {
+        setTimeout(() => {
+          if (vslRef.value) {
+            setVirtualListToBottom();
+          }
+        }, 1000);
       });
     });
 
@@ -206,6 +217,7 @@ export default {
           ? props.info.conversationPartner1
           : null;
       console.log(conversationPartnerId);
+      console.log(getInfo.value.id);
       const user = props.userInfo.find(
         (user) => user.id === conversationPartnerId
       );
@@ -213,22 +225,26 @@ export default {
     };
 
     const newMessage = (message) => {
-      const payload = {
-        type: "MESSAGE",
-        recipientId: props.info.conversationPartner2,
-        data: {
-          time: null,
-          conversationPartner1: props.info.conversationPartner1,
-          conversationPartner2: props.info.conversationPartner2,
-          messageText: message.data.messageText,
-          readStatus: null,
-          dialogId: props.info.id,
-        },
-      };
-      commit("profile/dialogs/addOneMessage", payload.data);
-      getMessageChat();
-      lastId.value -= 1;
-      mes.value = "";
+      if (message.data) {
+        const payload = {
+          type: "MESSAGE",
+          recipientId: message.recipientId,
+          data: {
+            time: message.data.time,
+            conversationPartner1: message.data.conversationPartner1,
+            conversationPartner2: message.data.conversationPartner2,
+            messageText: message.data.messageText,
+            readStatus: null,
+            id: message.data.id,
+          },
+        };
+        commit("profile/dialogs/setNewMessage", payload.data);
+        loadNewMessage();
+        lastId.value -= 1;
+        mes.value = "";
+      } else {
+        return;
+      }
     };
 
     const onSubmitMessage = () => {
@@ -237,25 +253,26 @@ export default {
         type: "MESSAGE",
         recipientId: props.info.conversationPartner2,
         data: {
-          time: null,
+          time: dayjs(new Date()).utc().format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"),
           conversationPartner1: props.info.conversationPartner1,
           conversationPartner2: props.info.conversationPartner2,
           messageText: mes.value,
           readStatus: null,
-          dialogId: props.info.id,
+          id: props.info.id,
         },
       };
-      commit("profile/dialogs/addOneMessage", payload.data);
-      getMessageChat();
+      commit("profile/dialogs/setSubmitMessage", payload.data);
+      loadSubmitMessage();
       $socket.sendMessage(payload);
       lastId.value -= 1;
       mes.value = "";
     };
 
     const onScrollToTop = async () => {
-      if (vslRef.value) {
+      if (vslRef.value && !isProcessing.value) {
+        isProcessing.value = true;
         if (!isHistoryEndReached()) {
-          if (numberPage.value <= props.messagesData.totalPages - 1) {
+          if (numberPage.value <= getOldMessages.value.totalPages - 1) {
             fetching.value = true;
             await dispatch("profile/dialogs/loadOlderMessages", {
               id: getInfoConversationPartner.value,
@@ -263,17 +280,21 @@ export default {
             });
             numberPage.value += 1;
           } else {
+            commit("profile/dialogs/markEndOfHistory");
             return;
           }
-
-          const oldMessages = [...getOldMessages.value].reverse();
+          const oldMessages = [...getOldMessages.value.messages].reverse();
           messageDialog.value = [...oldMessages, ...messageDialog.value];
 
           nextTick(() => {
-            let offset = oldMessages.reduce((sum) => sum + getHeightOfMessage(), 0);
+            const offset = oldMessages.reduce(
+              (sum) => sum + getHeightOfMessage(),
+              0
+            );
 
             setVirtualListToOffset(offset);
             fetching.value = false;
+            isProcessing.value = false;
           });
         }
       }
@@ -283,9 +304,19 @@ export default {
       return 60;
     };
 
-    const getMessageChat = () => {
-      const messages = [...props.messagesData.messages];
+    const loadOldMessagesChat = async () => {
+      const messages = [...getOldMessages.value.messages];
       messageDialog.value = messages.reverse();
+    };
+
+    const loadNewMessage = async () => {
+      messageDialog.value = [...messageDialog.value, getNewMessage.value];
+      if (follow.value) setVirtualListToBottom();
+    };
+
+    const loadSubmitMessage = async () => {
+      messageDialog.value = [...messageDialog.value, getSubmitMessage.value];
+      if (follow.value) setVirtualListToBottom();
     };
 
     const setVirtualListToBottom = () => {
@@ -351,7 +382,6 @@ export default {
       filteredUserInfo,
       onSubmitMessage,
       onScrollToTop,
-      getMessageChat,
       onScroll,
       onScrollToBottom,
       isHistoryEndReached,

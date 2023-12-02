@@ -439,7 +439,7 @@ export default {
         });
         return;
       }
-      dispatch("profile/friends/apiSubscribe", id);
+      dispatch("profile/friends/apiSubscribe", {id});
     };
 
     const fetchUserInfo = () => {
@@ -469,19 +469,19 @@ export default {
 
     const onConfrim = async (id) => {
       if (modalType.value === "delete") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
+        dispatch("profile/friends/apiDeleteFriends", { id }).then(() => {
           closeModal();
         });
       }
 
       if (modalType.value === "deleteSubscribe") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
+        dispatch("profile/friends/apiDeleteFriends", {id}).then(() => {
           closeModal();
         });
       }
 
       if (modalType.value === "cancelFriend") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
+        dispatch("profile/friends/apiDeleteFriends", {id}).then(() => {
           closeModal();
         });
       }
@@ -491,14 +491,14 @@ export default {
       }
 
       if (modalType.value === "block") {
-        dispatch("users/actions/apiBlockedUser", id).then(() => {
+        dispatch("users/actions/apiBlockedUser", {id}).then(() => {
           blocked.value = true;
           closeModal();
         });
       }
 
       if (modalType.value === "unblock") {
-        dispatch("users/actions/apiUnblockUser", id).then(() => {
+        dispatch("users/actions/apiUnblockUser", {id}).then(() => {
           blocked.value = false;
           closeModal();
         });
