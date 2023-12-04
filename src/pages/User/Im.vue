@@ -106,10 +106,7 @@
     </div>
 
     <div class="im__chat" v-if="activeDialog && messagesLoaded">
-      <im-chat
-        :user-info="users"
-        :info="activeDialog"
-      />
+      <im-chat :user-info="users" :info="activeDialog" />
     </div>
 
     <div v-else class="no-dialog">
@@ -146,6 +143,7 @@ export default {
     const activeDialog = ref(null);
     const activeDialogId = ref(props.activeDialogId);
     const numberPage = ref(0);
+    const defaultDirection = ref("desc");
     const messagesLoaded = ref(false);
     const { translationsLang } = useTranslations();
 
@@ -183,7 +181,11 @@ export default {
         if (newVal) {
           await dispatch("profile/dialogs/newDialogs", newVal);
           messagesLoaded.value = false;
-          await dispatch("profile/dialogs/loadOlderMessages", { id: newVal, countPage: numberPage.value });
+          await dispatch("profile/dialogs/loadLastMessages", {
+            id: newVal,
+            countPage: numberPage.value,
+            direction: defaultDirection.value,
+          });
           messagesLoaded.value = true;
           const newActiveDialog = dispatch("profile/dialogs/fetchDialogs")
             .length

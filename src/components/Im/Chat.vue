@@ -144,8 +144,8 @@ export default {
     const lastId = ref(-1);
     const infoChatUser = ref(null);
     const messageDialog = ref([]);
-    // const messages = ref([]);
-    const numberPage = ref(1);
+    const numberPage = ref(null);
+    const checkNumberPage = ref(null);
     const isProcessing = ref(false);
     const follow = ref(false);
     const vslRef = ref(null);
@@ -154,8 +154,11 @@ export default {
     const { translationsLang } = useTranslations();
 
     const getInfo = computed(() => getters["profile/info/getInfo"]);
-    const getOldMessages = computed(
-      () => getters["profile/dialogs/getOldMessages"]
+    const getLastMessages = computed(
+      () => getters["profile/dialogs/getLastMessages"]
+    );
+    const getNextMessages = computed(
+      () => getters["profile/dialogs/getNextMessages"]
     );
 
     const getInfoConversationPartner = computed(() =>
@@ -172,11 +175,11 @@ export default {
     );
 
     watch(getInfoConversationPartner, async () => {
-      loadOldMessagesChat();
+      loadLastMessagesChat();
     });
 
     onMounted(async () => {
-      loadOldMessagesChat();
+      loadLastMessagesChat();
       follow.value = true;
       await axios.put(`dialogs/${props.info.id}`);
       if (!getInfo.value) {
@@ -193,7 +196,7 @@ export default {
           // commit("profile/notifications/setNotifications", messagePayload);
         }
       });
-      
+
       nextTick(() => {
         setTimeout(() => {
           if (vslRef.value) {
@@ -244,10 +247,10 @@ export default {
     const onSubmitMessage = () => {
       if (!mes.value.trim()) return;
       const payload = {
-        type: 'MESSAGE',
+        type: "MESSAGE",
         recipientId: props.info.conversationPartner2,
         data: {
-          time: dayjs(new Date()).utc().format('YYYY-MM-DDTHH:mm:ss.SSSSSS[Z]'),
+          time: dayjs(new Date()).utc().format("YYYY-MM-DDTHH:mm:ss.SSSSSS[Z]"),
           conversationPartner1: props.info.conversationPartner1,
           conversationPartner2: props.info.conversationPartner2,
           messageText: mes.value,
@@ -267,22 +270,39 @@ export default {
       if (vslRef.value && !isProcessing.value) {
         isProcessing.value = true;
         if (!isHistoryEndReached()) {
-          if (numberPage.value <= getOldMessages.value.totalPages - 1) {
+          if (numberPage.value >= 0) {
             fetching.value = true;
-            await dispatch("profile/dialogs/loadOlderMessages", {
+            await dispatch("profile/dialogs/loadNextMessages", {
               id: getInfoConversationPartner.value,
               countPage: numberPage.value,
+              direction: "asc",
             });
-            numberPage.value += 1;
+            numberPage.value -= 1;
           } else {
             commit("profile/dialogs/markEndOfHistory");
             return;
           }
-          const oldMessages = [...getOldMessages.value.messages].reverse();
-          messageDialog.value = [...oldMessages, ...messageDialog.value];
+          if (checkNumberPage.value === getLastMessages.value.totalPages - 2) {
+            const filteredMessageByTime = getNextMessages.value.filter(
+              (item2) =>
+                !getLastMessages.value.messages.some(
+                  (item1) => item1.time === item2.time
+                )
+            );
+
+            messageDialog.value = [
+              ...filteredMessageByTime,
+              ...messageDialog.value,
+            ];
+          } else {
+            messageDialog.value = [
+              ...getNextMessages.value,
+              ...messageDialog.value,
+            ];
+          }
 
           nextTick(() => {
-            const offset = oldMessages.reduce(
+            const offset = getNextMessages.value.reduce(
               (sum) => sum + getHeightOfMessage(),
               0
             );
@@ -299,9 +319,11 @@ export default {
       return 60;
     };
 
-    const loadOldMessagesChat = async () => {
-      const messages = [...getOldMessages.value.messages];
+    const loadLastMessagesChat = async () => {
+      const messages = [...getLastMessages.value.messages];
       messageDialog.value = messages.reverse();
+      numberPage.value = getLastMessages.value.totalPages - 2;
+      checkNumberPage.value = getLastMessages.value.totalPages - 2;
     };
 
     const loadMessageChat = async (message) => {
@@ -367,7 +389,7 @@ export default {
       vslRef,
       translationsLang,
       getInfo,
-      getOldMessages,
+      getNextMessages,
       getInfoConversationPartner,
       filteredUserInfo,
       onSubmitMessage,

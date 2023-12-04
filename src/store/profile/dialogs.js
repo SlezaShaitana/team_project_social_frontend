@@ -5,25 +5,27 @@ export default {
   state: {
     dialogs: [],
     unreadedMessages: 0, // total unreaded
-    oldMessages: {
-      messages: [], // sorted oldest->newest 0 is oldest
+    lastMessages: {
+      messages: [],
       totalPages: null,
     },
-    totalMessages: null,
-    totalOldMessages: null,
+    nextMessages: [],
+    newMessage: {},
+    mySubmitMessage: {},
+    allMessages: [],
+    totalNextMessages: null,
+    totalLastMessages: null,
     dialogsLoaded: false,
     activeDialogId: null,
     oldLastKnownMessageId: null,
     isHistoryEndReached: false,
-    newMessage: {},
-    mySubmitMessage: {},
-    allMessages: [],
   },
   getters: {
     getDialogs: (state) => state.dialogs,
     getNewMessage: (state) => state.newMessage,
     getSubmitMessage: (state) => state.mySubmitMessage,
-    getOldMessages: (state) => state.oldMessages,
+    getNextMessages: (state) => state.nextMessages,
+    getLastMessages: (state) => state.lastMessages,
     oldestKnownMessageId: (state) => (state.messages),
     activeDialog: (state) => state.dialogs.find((el) => el.id == state.activeDialogId),
     getActiveDialogId: (state) => state.activeDialogId,
@@ -33,9 +35,9 @@ export default {
     isHistoryEndReached: (state) => state.isHistoryEndReached,
   },
   mutations: {
-    clearOldMessages(state) {
-      state.oldMessages.messages = [];
-      state.oldMessages.totalPages = null;
+    clearLastMessages(state) {
+      state.lastMessages.messages = [];
+      state.lastMessages.totalPages = null;
     },
 
     setUnreadedMessages: (state, unread) => (state.unreadedMessages = unread),
@@ -50,20 +52,26 @@ export default {
     },
     dialogsLoaded: (state) => (state.dialogsLoaded = true),
     setActiveDialogId: (state, value) => (state.activeDialogId = value),
-    addOldMessages: (state, {
-      oldMessages,
+    addNextMessages: (state, {
+      nextMessages,
       total
     }) => {
-      state.allMessages = oldMessages.content;
-      state.oldMessages.totalPages = oldMessages.totalPages;
-      state.oldMessages.messages = oldMessages.content;
-      state.oldMessages.messages.sort((a, b) => a.time - b.time);
-      state.totalOldMessages = total;
+      state.nextMessages = nextMessages;
+      state.nextMessages.sort((a, b) => a.time - b.time);
+      state.allMessages = [...state.nextMessages, ...state.allMessages];
+      state.totalNextMessages = total;
+    },
+    addLastMessages: (state, {
+      lastMessages,
+      total
+    }) => {
+      state.lastMessages.totalPages = lastMessages.totalPages;
+      state.lastMessages.messages = lastMessages.content;
+      state.lastMessages.messages.sort((a, b) => a.time - b.time);
+      state.allMessages = state.lastMessages.messages;
+      state.totalLastMessages = total;
     },
 
-    addOneMessage: (state, messagePayload) => {
-      state.messages.push(messagePayload);
-    },
     selectDialog: (state, dialogId) => {
       state.activeId = dialogId;
       state.messages = [];
@@ -126,20 +134,40 @@ export default {
 
     // Получаем сообщения диалога по dialogId
     // Запрос: dialogs/messages?recipientId=${id}&page=${countPage}&size=1&sort=time,desc
-    async loadOlderMessages({
+    async loadLastMessages({
       commit
     }, payload) {
       const {
         id,
-        countPage
+        countPage,
+        direction,
       } = payload;
 
-      const response = await dialogsApi.getOldMessages(id, countPage);
+      const response = await dialogsApi.getMessages(id, countPage, direction);
       if (!response.data.content) return;
-      const oldMessages = response.data;
-      commit('clearOldMessages');
-      commit('addOldMessages', {
-        oldMessages,
+      const lastMessages = response.data;
+      commit('clearLastMessages');
+      commit('addLastMessages', {
+        lastMessages,
+        total: response.unreadCount,
+      });
+    },
+
+    // Запрос: dialogs/messages?recipientId=${id}&page=${countPage}&size=1&sort=time,asc
+    async loadNextMessages({
+      commit
+    }, payload) {
+      const {
+        id,
+        countPage,
+        direction,
+      } = payload;
+
+      const response = await dialogsApi.getMessages(id, countPage, direction);
+      if (!response.data.content) return;
+      const nextMessages = response.data.content;
+      commit('addNextMessages', {
+        nextMessages,
         total: response.unreadCount,
       });
     },

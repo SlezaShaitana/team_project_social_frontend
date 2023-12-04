@@ -5,12 +5,12 @@ export default {
     return axios.get(`/dialogs/recipientId/${id}`);
   },
 
-  getMessages(id) {
-    return axios.get(`dialogs/messages?recipientId=${id}&page=0&sort=time,asc`);
-  },
+  // getMessages(id, countPage) {
+  //   return axios.get(`dialogs/messages?recipientId=${id}&page=${countPage}&sort=time,asc`);
+  // },
   
-  getOldMessages(id, countPage) {
-    return axios.get(`dialogs/messages?recipientId=${id}&page=${countPage}&sort=time,desc`);
+  getMessages(id, countPage, direction) {
+    return axios.get(`dialogs/messages?recipientId=${id}&page=${countPage}&sort=time,${direction}`);
   },
 
   getDialogs() {
