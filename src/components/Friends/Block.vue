@@ -202,7 +202,7 @@
           >
             <span>{{ translationsLang.profileAccountUnblocking }}</span>
             <img
-              class="filter-green"
+              class="filter-green svg-width"
               src="@/assets/static/img/security-system-unlock.svg"
               alt="img.svg"
             />

@@ -250,7 +250,7 @@
         >
           <div
             class="news-block__actions-block news-block__comments-btn"
-            @click="toggleComments"
+            @click="toggleComments()"
             :title="
               !openCommnets
                 ? translationsLang.newsBlockCommentTitleFirst
@@ -303,7 +303,7 @@
                 currentComments.page + 1 !== currentComments.totalPages
               "
               class="post-block__comment-more"
-              @click.prevent="showMore"
+              @click.prevent="showMore()"
             >
               {{ translationsLang.newsBlockCommentMore }}
             </button>

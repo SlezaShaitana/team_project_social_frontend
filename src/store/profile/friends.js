@@ -171,9 +171,9 @@ export default {
       rootGetters,
     }, {
       id,
-      statusCode,
+      statusCode = "",
       isApprove = false,
-      searchQuery,
+      searchQuery = {},
     }) {
       // const _friend = getters.getResult.friends.find((fr) => fr.id === id);
       if (statusCode === 'REQUEST_TO') {
@@ -212,11 +212,11 @@ export default {
       dispatch,
       rootGetters
     }, data) {
-      const { id, searchQuery } = data;
+      const { id } = data;
       await friends.addSubscribe(id);
       dispatchSetAlert(dispatch, 'Заявка отправлена');
       dispatch('apiFriends');
-      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest'], searchQuery);
+      dispatchSearchUsers(dispatch, rootGetters['global/search/getLastSearchUsersRequest']);
     },
 
     async apiRequest({

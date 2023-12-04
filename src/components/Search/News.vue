@@ -13,7 +13,7 @@
     <pagination
       v-if="getNewsPagination.totalElements > 5"
       :count="getNewsPagination.totalElements"
-      v-model="page"
+      v-model:page="page"
       :per-page="size"
     />
   </div>

@@ -157,12 +157,6 @@ export default {
     const getOldMessages = computed(
       () => getters["profile/dialogs/getOldMessages"]
     );
-    const getNewMessage = computed(
-      () => getters["profile/dialogs/getNewMessage"]
-    );
-    const getSubmitMessage = computed(
-      () => getters["profile/dialogs/getSubmitMessage"]
-    );
 
     const getInfoConversationPartner = computed(() =>
       props.info?.conversationPartner1 === getInfo.value?.id
@@ -205,7 +199,7 @@ export default {
           if (vslRef.value) {
             setVirtualListToBottom();
           }
-        }, 1000);
+        }, 800);
       });
     });
 
@@ -239,7 +233,7 @@ export default {
           },
         };
         commit("profile/dialogs/setNewMessage", payload.data);
-        loadNewMessage();
+        loadMessageChat(payload.data);
         lastId.value -= 1;
         mes.value = "";
       } else {
@@ -258,11 +252,12 @@ export default {
           conversationPartner2: props.info.conversationPartner2,
           messageText: mes.value,
           readStatus: null,
-          dialogId: props.info.id
+          dialogId: props.info.id,
+          id: props.info.id,
         },
       };
       commit("profile/dialogs/setSubmitMessage", payload.data);
-      loadSubmitMessage();
+      loadMessageChat(payload.data);
       $socket.sendMessage(payload);
       lastId.value -= 1;
       mes.value = "";
@@ -309,13 +304,8 @@ export default {
       messageDialog.value = messages.reverse();
     };
 
-    const loadNewMessage = async () => {
-      messageDialog.value = [...messageDialog.value, getNewMessage.value];
-      if (follow.value) setVirtualListToBottom();
-    };
-
-    const loadSubmitMessage = async () => {
-      messageDialog.value = [...messageDialog.value, getSubmitMessage.value];
+    const loadMessageChat = async (message) => {
+      messageDialog.value = [...messageDialog.value, message];
       if (follow.value) setVirtualListToBottom();
     };
 

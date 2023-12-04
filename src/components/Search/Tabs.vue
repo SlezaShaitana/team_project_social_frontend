@@ -20,16 +20,16 @@ export default {
   name: "SearchTabs",
 
   setup() {
-    const store = useStore();
+    const { getters, state, dispatch } = useStore();
 
-    const tabs = computed(() => store.getters["global/search/tabs"]);
-    const tabSelect = computed(() => store.getters["global/search/tabSelect"]);
+    const tabs = computed(() => getters["global/search/tabs"]);
+    const tabSelect = computed(() => getters["global/search/tabSelect"]);
     const currentTranslations = computed(
-      () => store.state.auth.languages.language.name
+      () => state.auth.languages.language.name
     );
 
-    const changeTab = () => {
-      store.dispatch("global/search/changeTab");
+    const changeTab = (id) => {
+      dispatch("global/search/changeTab", id);
     };
 
     return {

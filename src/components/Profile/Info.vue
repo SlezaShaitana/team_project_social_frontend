@@ -547,7 +547,7 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountUnsubscribe }}
@@ -562,10 +562,10 @@
                 "
                 href="#"
                 class="profile-info__btn subscribe btn-send__message"
-                @click.prevent="subscribe(info.friendId)"
+                @click.prevent="subscribe(info.id)"
               >
                 <img
-                  src="@/assets/static/img/sidebar/admin/comments.svg"
+                  src="@/assets/static/img/add.svg"
                   alt="img.svg"
                 />
                 {{ translationsLang.profileAccountSubscribe }}
@@ -574,7 +574,7 @@
                 v-if="infoFriend.statusCode === 'REQUEST_FROM'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="acceptFriendRequest(info.friendId)"
+                @click.prevent="acceptFriendRequest(info.id)"
               >
                 <img
                   class="accept"
@@ -590,7 +590,11 @@
                 class="profile-info__btn btn-send__message"
                 @click.prevent="onSentMessage"
               >
-                <img src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
+                <img
+                  class="svg-width"
+                  src="@/assets/static/img/sidebar/im.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountSendMessage }}
               </a>
               <!-- Блокировка/разблокировка -->
@@ -602,7 +606,7 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="unBlockedUser(info.friendId)"
+                @click.prevent="unBlockedUser(info.id)"
               >
                 <img
                   class="filter-green"
@@ -615,7 +619,7 @@
                 v-else
                 href="#"
                 class="profile-info__btn block btn-send__message"
-                @click.prevent="blockedUser(info.friendId)"
+                @click.prevent="blockedUser(info.id)"
               >
                 <img src="@/assets/static/img/unblocked.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountBlocking }}
@@ -625,7 +629,7 @@
                 v-if="infoFriend.statusCode === 'FRIEND'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountDeleteFriend }}
@@ -634,7 +638,7 @@
                 v-if="infoFriend.statusCode === 'REQUEST_TO'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountCancelFriend }}
@@ -650,11 +654,11 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="addToFriend(info.friendId)"
+                @click.prevent="addToFriend(info.id)"
               >
                 <img
                   class="accept"
-                  src="@/assets/static/img/add.svg"
+                  src="@/assets/static/img/friend-add.svg"
                   alt="img.svg"
                 />
                 {{ translationsLang.profileAccountAddFriend }}
@@ -731,9 +735,18 @@
       <modal v-model="modalShow">
         <p v-if="modalText">{{ modalText }}</p>
         <template v-slot:actions>
-          <button @click.prevent="onConfirm">Да</button>
-          <button variant="red" bordered="bordered" @click="closeModal">
-            Отмена
+          <button class="btn" @click="onConfrim(targetId)">
+            <span class="helper"></span>
+            {{ translationsLang.yes }}
+          </button>
+          <button
+            class="btn btn--red btn--bordered"
+            variant="red"
+            bordered="bordered"
+            @click="closeModal()"
+          >
+            <span class="helper"></span>
+            {{ translationsLang.cancel }}
           </button>
         </template>
       </modal>
@@ -1000,7 +1013,7 @@ export default {
     };
 
     const cancelApiRequests = (id) => {
-      dispatch("profile/friends/apiDeleteFriends", id);
+      dispatch("profile/friends/apiDeleteFriends", {id});
       locationReload();
     };
 
@@ -1031,17 +1044,17 @@ export default {
         });
         return;
       }
-      dispatch("profile/friends/apiSubscribe", id);
+      dispatch("profile/friends/apiSubscribe", {id});
       locationReload();
     };
 
     const blockedUser = (id) => {
-      dispatch("users/actions/apiBlockedUser", id);
+      dispatch("users/actions/apiBlockedUser", {id});
       locationReload();
     };
 
     const unBlockedUser = (id) => {
-      dispatch("users/actions/apiUnblockUser", id);
+      dispatch("users/actions/apiUnblockUser", {id});
       locationReload();
     };
 
@@ -1555,4 +1568,7 @@ export default {
       img
         width 130px
         height 130px
+
+    .svg-width
+      width 15px
 </style>

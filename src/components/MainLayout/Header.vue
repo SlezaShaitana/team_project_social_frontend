@@ -14,7 +14,7 @@
             class="main-layout__search"
             action="#"
             v-if="getInfo && !getInfo.isDeleted"
-            @submit.prevent="onSearch"
+            @submit.prevent="onSearch()"
           >
             <button class="main-layout__search-btn">
               <search-icon />
@@ -24,7 +24,7 @@
               type="text"
               :placeholder="translationsLang.searchPlaceholder"
               :value="searchText"
-              @input="setSearchText($event.target.value)"
+              @input="onSearch($event.target.value)"
             />
           </form>
         </div>
@@ -179,6 +179,7 @@ export default {
     const instance = getCurrentInstance();
     const $socket = instance.appContext.config.globalProperties.$socket;
     const elementRef = ref(null);
+    const debounceTimeout = ref(null);
     const { translationsLang } = useTranslations();
 
     const dialogs = computed(() => state.profile.dialogs.dialogs);
@@ -193,14 +194,14 @@ export default {
     const activeDialogId = computed(() => route.params.activeDialogId);
 
     // watch(
-      // () => dialogs,
-      // (newVal) => {
-      //   let unreadCount = 0;
-      //   newVal.forEach((item) => {
-      //     unreadCount += item.unreadCount;
-      //   });
-      //   commit("profile/dialogs/setUnreadedMessages", unreadCount);
-      // }
+    // () => dialogs,
+    // (newVal) => {
+    //   let unreadCount = 0;
+    //   newVal.forEach((item) => {
+    //     unreadCount += item.unreadCount;
+    //   });
+    //   commit("profile/dialogs/setUnreadedMessages", unreadCount);
+    // }
     // );
 
     onMounted(async () => {
@@ -260,25 +261,37 @@ export default {
       showActionsProfile.value = !showActionsProfile.value;
     };
 
-   const closeActionsProfile = (e) => {
+    const closeActionsProfile = (e) => {
       if (elementRef.value && !elementRef.value.contains(e.target)) {
         showActionsProfile.value = false;
       }
     };
 
-    const onSearch = () => {
-      dispatch("global/search/searchAll", searchText.value).then(() => {
-        router.push({ name: "Search", query: { text: searchText.value } });
-      });
+    const onSearch = (event) => {
+      if (debounceTimeout.value) {
+        clearTimeout(debounceTimeout.value);
+      }
+      debounceTimeout.value = setTimeout(() => {
+        commit("global/search/setSearchText", event);
+        dispatch("global/search/searchAll", searchText.value).then(() => {
+          router.push({ name: "Search", query: { text: searchText.value } });
+        });
+      }, 1000);
     };
 
     const togglePush = () => {
       isOpenPush.value = !isOpenPush.value;
     };
 
-    const setSearchText = (event) => {
-      commit("global/search/setSearchText", event);
-    };
+    // const setSearchText = (event) => {
+    //   if (debounceTimeout.value) {
+    //     clearTimeout(debounceTimeout.value);
+    //   }
+
+    //   debounceTimeout.value = setTimeout(() => {
+    //     commit("global/search/setSearchText", event);
+    //   }, 1000);
+    // };
 
     return {
       isOpenPush,
@@ -296,7 +309,7 @@ export default {
       closeActionsProfile,
       onSearch,
       togglePush,
-      setSearchText,
+      // setSearchText,
     };
   },
 };

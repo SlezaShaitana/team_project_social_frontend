@@ -44,6 +44,9 @@
                       'FRIEND_SUBSCRIBE')
                   "
                 >
+                  {{ getNotificationsTextType(info?.data?.notificationType) }}
+                  <strong>{{ info?.data?.content }}</strong>
+                  <br>
                   <span class="push__content-preview">
                     {{
                       info?.data?.author?.firstName +
@@ -51,8 +54,6 @@
                       info?.data?.author?.lastName
                     }}
                   </span>
-                  {{ getNotificationsTextType(info?.data?.notificationType) }}
-                  {{ info?.data?.content }}
                 </div>
 
                 <div
@@ -62,14 +63,14 @@
                   "
                 >
                   {{ getNotificationsTextType(info?.data?.notificationType) }}
-                  {{ info?.data?.content }}
-                  <span class="push__content-preview">
+                  <strong>{{ info?.data?.content }}</strong>
+                  <!-- <span class="push__content-preview">
                     {{
                       info?.data?.author?.firstName +
                       " " +
                       info?.data?.author?.lastName
                     }}
-                  </span>
+                  </span> -->
                 </div>
 
                 <div v-else>

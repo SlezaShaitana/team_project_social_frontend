@@ -74,12 +74,11 @@ export default {
           postId: props.id,
           text: commentText.value,
           id: commentEdit.value ? commentEditInfo.value.id : null,
-        }.then(() => {
+        }).then(() => {
           commentText.value = "";
           commentEdit.value = false;
           commentEditInfo.value = null;
-        })
-      );
+        });
     };
 
     const setComputed = () => {
