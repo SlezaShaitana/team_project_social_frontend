@@ -391,6 +391,7 @@ export default {
 
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const comments = computed(() => state.profile.comments.comments);
+    const getComents = computed(() => getters['prpfile/comments/getComents']);
 
     const currentComments = computed(() => comments[props.info.id]);
     const displayedText = computed(() => {
@@ -518,6 +519,7 @@ export default {
       openText,
       isEditNews,
       commnets,
+      getComents,
       showInfoTimer,
       showActions,
       textRef,

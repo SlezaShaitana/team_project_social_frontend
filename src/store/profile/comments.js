@@ -9,6 +9,7 @@ export default {
   namespaced: true,
   getters: {
     authors: (state, getters, rootState) => rootState.global.authors.authors,
+    getComents: (state) => state.comments,
   },
 
   mutations: {

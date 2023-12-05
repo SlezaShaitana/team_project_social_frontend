@@ -33,7 +33,7 @@
             <span class="indicator" v-if="getNotificationsLength">{{
               getNotificationsLength
             }}</span>
-            <span @click="togglePush">
+            <span @click="togglePush()">
               <push-icon
                 :isNotEmpty="getNotificationsLength > 0 && !isOpenPush"
               />

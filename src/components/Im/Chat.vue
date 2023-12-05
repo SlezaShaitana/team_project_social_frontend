@@ -294,6 +294,17 @@ export default {
               ...filteredMessageByTime,
               ...messageDialog.value,
             ];
+
+            nextTick(() => {
+              const offset = filteredMessageByTime.reduce(
+                (sum) => sum + 60,
+                0
+              );
+
+              setVirtualListToOffset(offset);
+              fetching.value = false;
+              isProcessing.value = false;
+            });
           } else {
             messageDialog.value = [
               ...getNextMessages.value,
@@ -303,7 +314,7 @@ export default {
 
           nextTick(() => {
             const offset = getNextMessages.value.reduce(
-              (sum) => sum + getHeightOfMessage(),
+              (sum) => sum + 60,
               0
             );
 
@@ -315,9 +326,9 @@ export default {
       }
     };
 
-    const getHeightOfMessage = () => {
-      return 60;
-    };
+    // const getHeightOfMessage = () => {
+    //   return 40;
+    // };
 
     const loadLastMessagesChat = async () => {
       const messages = [...getLastMessages.value.messages];

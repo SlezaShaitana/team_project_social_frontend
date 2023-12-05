@@ -44,9 +44,6 @@
                       'FRIEND_SUBSCRIBE')
                   "
                 >
-                  {{ getNotificationsTextType(info?.data?.notificationType) }}
-                  <strong>{{ info?.data?.content }}</strong>
-                  <br>
                   <span class="push__content-preview">
                     {{
                       info?.data?.author?.firstName +
@@ -54,6 +51,9 @@
                       info?.data?.author?.lastName
                     }}
                   </span>
+                  {{ getNotificationsTextType(info?.data?.notificationType) }}
+                  <strong>{{ info?.data?.content }}</strong>
+                  <br />
                 </div>
 
                 <div
@@ -64,13 +64,13 @@
                 >
                   {{ getNotificationsTextType(info?.data?.notificationType) }}
                   <strong>{{ info?.data?.content }}</strong>
-                  <!-- <span class="push__content-preview">
+                  <span class="push__content-preview">
                     {{
                       info?.data?.author?.firstName +
                       " " +
                       info?.data?.author?.lastName
                     }}
-                  </span> -->
+                  </span>
                 </div>
 
                 <div v-else>
@@ -92,12 +92,16 @@
           </div>
         </div>
       </div>
-      <button class="push__btn" @click.prevent="showMore" v-if="showButtonMore">
+      <button
+        class="push__btn"
+        @click.prevent="showMore()"
+        v-if="showButtonMore"
+      >
         {{ translationsLang.showmoreNotification }}
       </button>
       <button
         class="push__btn"
-        @click.prevent="readedButton"
+        @click.prevent="readedButton()"
         v-if="showButtonReaded"
       >
         {{ translationsLang.readedNotification }}
@@ -123,13 +127,19 @@ export default {
     const { getters, dispatch, commit } = useStore();
     const visibleNotifications = ref([]);
     const showCount = ref(3);
+    const numberPage = ref(null);
+    const quantityNotifications = ref(20);
+    const startIndex = ref(3);
     const isClickedButton = ref(false);
     const listRef = ref(null);
     const wrapRef = ref(null);
     const { translationsLang } = useTranslations();
 
-    const getNotifications = computed(
-      () => getters["profile/notifications/getNotifications"]
+    const getLastNotifications = computed(
+      () => getters["profile/notifications/getLastNotifications"]
+    );
+    const getNextNotifications = computed(
+      () => getters["profile/notifications/getNextNotifications"]
     );
     const getNotificationsLength = computed(
       () => getters["profile/notifications/getNotificationsLength"]
@@ -137,24 +147,31 @@ export default {
     const getNotificationsTextType = computed(
       () => getters["profile/notifications/getNotificationsTextType"]
     );
+    const getAllNotifications = computed(
+      () => getters["profile/notifications/getAllNotifications"]
+    );
 
     const shouldUpdateVisibleNotifications = computed(
-      () => getNotifications.value.length === 0
+      () => getLastNotifications.value.length === 0
     );
     const showButtonMore = computed(() => {
-      if (visibleNotifications.value.length !== getNotifications.value.length) {
+      if (
+        visibleNotifications.value.length !==
+        getAllNotifications.value.totalElements
+      ) {
         return true;
-      } else if (getNotifications.value.length === 0) {
+      } else if (getAllNotifications.value.notifications.length === 0) {
         return false;
       } else {
         return false;
       }
     });
     const showButtonReaded = computed(() => {
-      if (getNotifications.value.length === 0) {
+      if (visibleNotifications.value.length === 0) {
         return false;
       } else if (
-        getNotifications.value.length === visibleNotifications.value.length
+        getAllNotifications.value.totalElements ===
+        visibleNotifications.value.length
       ) {
         return true;
       } else {
@@ -166,12 +183,12 @@ export default {
       () => props.isOpen,
       (newVal) => {
         if (newVal) {
-          dispatch("profile/notifications/fetchNotifications").then(() => {
+          dispatch("profile/notifications/fetchNotifications", {
+            countPage: 0,
+            direction: "desc",
+          }).then(() => {
             loadVisibleNotifications();
           });
-          if (getNotifications.value.length === 0) {
-            dispatch("profile/notifications/fetchNotifications");
-          }
           listRef.value.scrollTop = 0;
         } else {
           dispatch("profile/notifications/fetchNotificationsLength");
@@ -180,14 +197,12 @@ export default {
       }
     );
 
-    watch(
-      () => shouldUpdateVisibleNotifications,
-      (newValue, oldValue) => {
-        if (newValue !== oldValue) {
-          visibleNotifications.value = [...getNotifications.value];
-        }
+    watch(shouldUpdateVisibleNotifications, (newValue, oldValue) => {
+      if (newValue !== oldValue) {
+        // visibleNotifications.value = [...getNotifications.value];
+        // visibleNotifications.value = [...getLastNotifications.value.notifications];
       }
-    );
+    });
 
     onMounted(() => {
       if (getNotificationsLength.value === 0) {
@@ -218,22 +233,53 @@ export default {
     };
 
     const loadVisibleNotifications = () => {
-      visibleNotifications.value = getNotifications.value.slice(
+      visibleNotifications.value = getLastNotifications.value.slice(
         0,
         showCount.value
       );
+      numberPage.value = getAllNotifications.value.totalPages - 2;
     };
 
-    const showMore = () => {
-      const startIndex = visibleNotifications.value.length;
-      const newVisibleNotifications = getNotifications.value.slice(
-        startIndex,
-        startIndex + showCount.value
-      );
-      visibleNotifications.value = [
-        ...visibleNotifications.value,
-        ...newVisibleNotifications,
-      ];
+    const showMore = async () => {
+      if (visibleNotifications.value.length === quantityNotifications.value) {
+        if (numberPage.value <= getAllNotifications.value.totalPages - 1) {
+          try {
+            await dispatch("profile/notifications/fetchNotifications", {
+              countPage: numberPage.value,
+              direction: "desc",
+            });
+            numberPage.value += 1;
+            quantityNotifications.value += 20;
+            addNotifications(getNextNotifications.value);
+          } catch (error) {
+            console.error("Ошибка при получении уведомлений: ", error);
+          }
+        }
+      } else {
+        if (quantityNotifications.value > 20) {
+          addNotifications(getNextNotifications.value);
+        } else {
+          addNotifications(getLastNotifications.value);
+        }
+      }
+    };
+
+    const addNotifications = (notificationsArr) => {
+      if (startIndex.value >= 20) {
+        startIndex.value = 0;
+      }
+
+      if (startIndex.value < 20) {
+        const newVisibleNotifications = notificationsArr.slice(
+          startIndex.value,
+          startIndex.value + showCount.value
+        );
+        startIndex.value += showCount.value;
+        visibleNotifications.value = [
+          ...visibleNotifications.value,
+          ...newVisibleNotifications,
+        ];
+      }
     };
 
     const incrementOffset = () => {
@@ -250,7 +296,8 @@ export default {
       listRef,
       wrapRef,
       translationsLang,
-      getNotifications,
+      getLastNotifications,
+      getNextNotifications,
       getNotificationsTextType,
       showButtonMore,
       showButtonReaded,

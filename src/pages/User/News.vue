@@ -49,7 +49,7 @@ import ErrorBlock from "@/components/ErrorBlock.vue";
 import AutoPaginator from "@/components/AutoPaginator.vue";
 
 export default {
-  name: "uNews",
+  name: "UserNews",
   components: {
     NewsBlock,
     NewsAdd,

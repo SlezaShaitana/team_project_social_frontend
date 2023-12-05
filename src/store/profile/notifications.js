@@ -4,13 +4,21 @@ import axios from 'axios';
 export default {
   namespaced: true,
   state: {
-    notifications: [],
+    lastNotifications: [],
+    nextNotifications: [],
     notificationsLength: 0,
     userInfo: {},
     size: 0,
+    allNotifications: {
+      notifications: [],
+      totalPages: null,
+      totalElements: null,
+    },
   },
   getters: {
-    getNotifications: (state) => state.notifications,
+    getLastNotifications: (state) => state.lastNotifications,
+    getNextNotifications: (state) => state.nextNotifications,
+    getAllNotifications: (state) => state.allNotifications,
     getNotificationsLength: (state) => state.notificationsLength,
     getNotificationsTextType: () => (type) => {
       switch (type) {
@@ -45,7 +53,23 @@ export default {
     },
   },
   mutations: {
-    setNotifications: (state, value) => (state.notifications = value),
+    clearLastNotifications: (state) => {
+      state.lastNotifications.notifications = [];
+      state.lastNotifications.totalPages = null;
+    },
+
+    setNextNotifications: (state, value) => {
+      state.nextNotifications = value.notifications;
+      state.allNotifications.totalPages = value.totalPages;
+      state.allNotifications.totalElements = value.totalElements;
+      state.allNotifications.notifications = [...value.notifications, ...state.allNotifications.notifications];
+    },
+    setLatsNotifications: (state, value) => {
+      state.lastNotifications = value.notifications;
+      state.allNotifications.totalPages = value.totalPages;
+      state.allNotifications.totalElements = value.totalElements;
+      state.allNotifications.notifications = value.notifications;
+    },
     setReadedNotifications: (state, value) => (state.notifications = value),
     setNotificationsLength: (state, value) => (state.notificationsLength = value),
     addNotification(state, notification) {
@@ -66,14 +90,21 @@ export default {
 
   actions: {
     async fetchNotifications({
-      commit
-    }) {
+      commit,
+      state
+    }, payload) {
+      const {
+        countPage,
+        direction
+      } = payload;
 
       // Отправка запроса на сервер с использованием текущей длины списка уведомлений
-      const response = await notifications.get();
+      const response = await notifications.get(countPage, direction);
 
       // Получение списка уведомлений
       const notificationsList = response.data.content;
+      const totalPages = response.data.totalPages;
+      const totalElements = response.data.totalElements;
 
       // Получение списка авторов
       const authorIds = notificationsList
@@ -125,7 +156,22 @@ export default {
       });
 
       // Ожидание завершения обработки уведомлений
-      commit('setNotifications', await Promise.all(mergedNotifications));
+      if (state.lastNotifications.length === 0) {
+        const lastNotifications = await Promise.all(mergedNotifications);
+        commit('clearLastNotifications');
+        commit('setLatsNotifications', {
+          notifications: lastNotifications,
+          totalPages: totalPages,
+          totalElements: totalElements,
+        });
+      } else {
+        const nextNotifications = await Promise.all(mergedNotifications)
+        commit('setNextNotifications', {
+          notifications: nextNotifications,
+          totalPages: totalPages,
+          totalElements: totalElements,
+        });
+      }
     },
 
     async fetchNotificationsLength({
