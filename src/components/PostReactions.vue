@@ -183,7 +183,7 @@ export default {
 
           localReaction.value = null;
           myCurrentReaction.value = { ...myNewReaction.value };
-          emit("update:reaction-added", reactionType);
+          emit("reaction-added", reactionType);
         } else {
           console.log("1.2)Меняем кол-во");
           myReactionStatus.value = false;
@@ -214,7 +214,7 @@ export default {
               }
             }, 0);
           }
-          emit("update:reaction-added", reactionType);
+          emit("reaction-added", reactionType);
         }
       } else {
         console.log("2)Нету реакции");
@@ -238,7 +238,7 @@ export default {
               }
             }, 0);
           }
-          emit("update:reaction-added", reactionType);
+          emit("reaction-added", reactionType);
         } else {
           console.log("2.2)Добавляем новую");
 
@@ -258,7 +258,7 @@ export default {
 
           myCurrentReaction.value = { ...myNewReaction };
           console.log(reactionType);
-          emit("update:reaction-added", reactionType);
+          emit("reaction-added", reactionType);
         }
       }
     };

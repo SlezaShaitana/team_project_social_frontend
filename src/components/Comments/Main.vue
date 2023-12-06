@@ -143,12 +143,12 @@ export default {
 
     const onDeleteComment = () => {
       if (props.isSubcomment)
-        emit("update:delete-comment", props.info.id, props.info.parentId);
-      else emit("update:delete-comment", props.info.id);
+        emit("delete-comment", props.info.id, props.info.parentId);
+      else emit("delete-comment", props.info.id);
     };
 
     const editComment = () => {
-      emit("update:edit-comment", {
+      emit("edit-comment", {
         id: props.info.id,
         commentText: props.info.commentText,
         parentId: props.info.parentId,
@@ -156,11 +156,11 @@ export default {
     };
 
     const onRecoverComment = () => {
-      emit("update:recover-comment", props.info.id);
+      emit("recover-comment", props.info.id);
     };
 
     const mainReview = () => {
-      emit("update:answer-comment");
+      emit("answer-comment");
     };
 
     const formatTime = (time) => {

@@ -15,6 +15,7 @@
 
     <div class="comment-add__input-container">
       <input
+        ref="addInput"
         type="text"
         minlength="5"
         class="comment-add__input"
@@ -40,11 +41,7 @@
       >
       </emoji-picker>
     </div>
-    <button
-      class="comment-add__submit-btn"
-      type="submit"
-      useStore
-    >
+    <button class="comment-add__submit-btn" type="submit" useStore>
       <submit-icon />
     </button>
   </form>
@@ -73,7 +70,7 @@ export default {
   props: {
     modelValue: String,
     id: [Number, String],
-    parentId: Number,
+    parentId: String,
     isSubcomment: {
       type: Boolean,
       default: false,
@@ -84,6 +81,7 @@ export default {
     const store = useStore();
     const input = ref("");
     const search = ref("");
+    const addInput = ref(null);
     const isOpenEmojiPicker = ref(false);
 
     const { translationsLang } = useTranslations();
@@ -106,6 +104,12 @@ export default {
       isOpenEmojiPicker.value = !isOpenEmojiPicker.value;
     };
 
+    const focusInput = () => {
+      if (addInput.value) {
+        addInput.value.focus();
+      }
+    }
+
     return {
       input,
       search,
@@ -116,6 +120,7 @@ export default {
       onSubmitComment,
       onSelectEmoji,
       openEmojiPicker,
+      focusInput,
     };
   },
 };

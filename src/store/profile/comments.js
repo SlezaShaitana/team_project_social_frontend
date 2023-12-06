@@ -18,9 +18,9 @@ export default {
         ...state.comments,
         [comments.postId]: {
           ...comments,
-          value: state.comments[comments.postId]
-            ? [...state.comments[comments.postId].value, ...comments.value]
-            : comments.value,
+          content: state.comments[comments.postId]
+            ? [...state.comments[comments.postId].content, ...comments.content]
+            : comments.content,
         },
       };
     },
@@ -30,9 +30,9 @@ export default {
         ...state.subComments,
         [subComments.commentId]: {
           ...subComments,
-          value: state.subComments[subComments.commentId]
-            ? [...state.subComments[subComments.commentId].value, ...subComments.value]
-            : subComments.value,
+          content: state.subComments[subComments.commentId]
+            ? [...state.subComments[subComments.commentId].content, ...subComments.content]
+            : subComments.content,
         },
       };
     },
@@ -42,7 +42,7 @@ export default {
         ...state.comments,
         [postId]: {
           ...state.comments[postId],
-          value: state.comments[postId].value.filter((comment) => comment.id !== id),
+          content: state.comments[postId].content.filter((comment) => comment.id !== id),
         },
       };
     },
@@ -52,7 +52,7 @@ export default {
         ...state.subComments,
         [parentId]: {
           ...state.subComments[parentId],
-          value: state.subComments[parentId].value.filter((comment) => comment.id !== id),
+          content: state.subComments[parentId].content.filter((comment) => comment.id !== id),
         },
       };
     },
@@ -60,7 +60,7 @@ export default {
     prependComment: (state, comment) => {
       state.comments = {
         ...state.comments,
-        value: [comment, ...state.comments.value],
+        content: [comment, ...state.comments.content],
       };
     },
 
@@ -97,7 +97,7 @@ export default {
       }, []);
       const data = {
         postId,
-        value: currentComments,
+        currentComments,
         page,
         totalPages,
         totalElements,

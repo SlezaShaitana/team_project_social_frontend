@@ -11,7 +11,7 @@
 
     <div class="comments__list" v-if="getInfo && info">
       <comment-block
-        v-for="i in info.value"
+        v-for="i in info.currentComments"
         :admin="admin"
         :key="i.id"
         :info="i"
@@ -42,7 +42,7 @@ export default {
 
   setup(props) {
     const store = useStore();
-    const info = ref(props.info);
+    const info = ref(props.info.currentComments);
     const commentText = ref("");
     const commentEdit = ref(false);
     const commentEditInfo = ref(null);
@@ -63,7 +63,7 @@ export default {
       commentEdit.value = true;
       commentText.value = commentVal;
       commentEditInfo.value = commentInfo;
-      addCommentRef.value.$refs.addInput.focus();
+      addCommentRef.value.focusInput();
     };
 
     const onSubmitComment = () => {

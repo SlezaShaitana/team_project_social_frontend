@@ -92,7 +92,7 @@ export default {
     const commentEditParentId = ref(null);
     const addCommentRef = ref(null);
     const { translationsLang } = useTranslations();
-
+    
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const subComments = computed(() => state.profile.comments.subComments);
 
@@ -102,7 +102,7 @@ export default {
         ? translationsLang.commentAnswerTextFirst
         : translationsLang.commentAnswerTextSecond;
     });
-    const currentSubComents = computed(() => subComments[props.info.id]);
+    const currentSubComents = computed(() => subComments.value[props.info.id]);
 
     const showSubComments = async () => {
       if (isShowSubComments.value) return;
@@ -123,7 +123,7 @@ export default {
     };
 
     const onEditMain = ({ commentText }) => {
-      emit("update:edit-comment", {
+      emit("edit-comment", {
         commentInfo: props.info,
         commentText,
       });
