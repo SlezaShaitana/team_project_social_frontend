@@ -83,7 +83,7 @@
           >
             <span>{{ translationsLang.profileAccountBlocking }}</span>
             <img
-              class="filter-green"
+              class="filter-green svg-width"
               src="@/assets/static/img/security-system-unlock.svg"
               alt="img.svg"
             />
@@ -112,18 +112,15 @@
               info.statusCode !== 'REQUEST_FROM'
             "
             class="friends-block__actions-block message subscribe__icon"
-            @click="subscribe(info.friendId)"
+            @click="subscribe(info.id)"
           >
             <span>{{ translationsLang.profileAccountSubscribe }}</span>
-            <img
-              src="@/assets/static/img/sidebar/admin/comments.svg"
-              alt="img.svg"
-            />
+            <img src="@/assets/static/img/add.svg" alt="img.svg" />
           </div>
           <div
             v-if="info.statusCode === 'REQUEST_FROM'"
             class="friends-block__actions-block message"
-            @click="acceptFriendRequest(info.friendId)"
+            @click="acceptFriendRequest(info.id)"
           >
             <span>{{ translationsLang.profileAccountAcceptRequests }}</span>
             <img
@@ -138,7 +135,11 @@
             v-if="info.statusCode !== 'BLOCKED'"
           >
             <span>{{ translationsLang.profileAccountSendMessage }}</span>
-            <img class="svg-width" src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
+            <img
+              class="svg-width"
+              src="@/assets/static/img/sidebar/im.svg"
+              alt="img.svg"
+            />
           </div>
           <div
             class="friends-block__actions-block delete"
@@ -158,7 +159,7 @@
           </div>
           <div
             class="friends-block__actions-block add"
-            @click="addToFriend(info.friendId)"
+            @click="addToFriend(info.id)"
             v-else-if="
               info.statusCode !== 'WATCHING' &&
               info.statusCode !== 'REQUEST_TO' &&
@@ -176,7 +177,7 @@
           >
             <span>{{ translationsLang.profileAccountUnblocking }}</span>
             <img
-              class="filter-green"
+              class="filter-green svg-width"
               src="@/assets/static/img/security-system-unlock.svg"
               alt="img.svg"
             />
@@ -196,10 +197,17 @@
     <modal v-model="modalShow">
       <p v-if="modalText">{{ modalText }}</p>
       <template v-slot:actions>
-        <button @click="onConfrim(targetId)">{{
-          translationsLang.yes
-        }}</button>
-        <button variant="red" bordered="bordered" @click="closeModal">
+        <button class="btn" @click="onConfrim(targetId)">
+          <span class="helper"></span>
+          {{ translationsLang.yes }}
+        </button>
+        <button
+          class="btn btn--red btn--bordered"
+          variant="red"
+          bordered="bordered"
+          @click="closeModal()"
+        >
+          <span class="helper"></span>
           {{ translationsLang.cancel }}
         </button>
       </template>
@@ -218,7 +226,7 @@ import Modal from "@/components/Modal";
 import ActionsShow from "@/Icons/ActionsShow.vue";
 
 export default {
-  name: "FriendsBlock",
+  name: "FriendsBlockSearch",
   directives: {
     clickOutside: vClickOutside.directive,
   },
@@ -247,6 +255,8 @@ export default {
         id: 124,
       }),
     },
+    page: Number,
+    size: Number,
   },
 
   setup(props) {
@@ -259,6 +269,9 @@ export default {
     const { translationsLang } = useTranslations();
 
     const dialogs = computed(() => getters["profile/dialogs/dialogs"]);
+    const getUsersQueryParams = computed(
+      () => getters["global/search/getUsersQueryParams"]
+    );
 
     const statusText = computed(() =>
       props.info.isOnline
@@ -269,11 +282,11 @@ export default {
     const online = computed(() => props.info.isOnline);
     const currentUser = computed(() => getters.getUser);
     const targetId = computed(() => {
-      if (props.info.friendId) {
-        if (props.info.friendId === currentUser.value) {
-          return props.info.friendId;
+      if (props.info.id) {
+        if (props.info.id === currentUser.value) {
+          return props.info.id;
         } else {
-          return props.info.friendId;
+          return props.info.id;
         }
       } else {
         return props.info.id;
@@ -315,15 +328,37 @@ export default {
     });
 
     const acceptFriendRequest = (id) => {
-      dispatch("profile/friends/apiAddFriends", { id, isApprove: true });
+      const searchQuery = {
+        ...getUsersQueryParams.value,
+        page: props.page - 1,
+        size: props.size,
+      };
+      dispatch("profile/friends/apiAddFriends", {
+        id: id,
+        isApprove: true,
+        searchQuery: searchQuery,
+      });
     };
 
     const addToFriend = (id) => {
-      dispatch("profile/friends/apiAddFriends", { id });
+      const searchQuery = {
+        ...getUsersQueryParams.value,
+        page: props.page - 1,
+        size: props.size,
+      };
+      dispatch("profile/friends/apiAddFriends", {
+        id: id,
+        searchQuery: searchQuery,
+      });
     };
 
     const subscribe = (id) => {
-      dispatch("profile/friends/apiSubscribeэ", id);
+      const searchQuery = {
+        ...getUsersQueryParams.value,
+        page: props.page - 1,
+        size: props.size,
+      };
+      dispatch("profile/friends/apiSubscribe", { id, searchQuery });
     };
 
     const closeModal = () => {
@@ -340,22 +375,33 @@ export default {
     };
 
     const onConfrim = async (id) => {
+      const searchQuery = {
+        ...getUsersQueryParams.value,
+        page: props.page - 1,
+        size: props.size,
+      };
       if (modalType.value === "delete") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
-          closeModal();
-        });
+        dispatch("profile/friends/apiDeleteFriends", { id, searchQuery }).then(
+          () => {
+            closeModal();
+          }
+        );
       }
 
       if (modalType.value === "deleteSubscribe") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
-          closeModal();
-        });
+        dispatch("profile/friends/apiDeleteFriends", { id, searchQuery }).then(
+          () => {
+            closeModal();
+          }
+        );
       }
 
       if (modalType.value === "cancelFriend") {
-        dispatch("profile/friends/apiDeleteFriends", id).then(() => {
-          closeModal();
-        });
+        dispatch("profile/friends/apiDeleteFriends", { id, searchQuery }).then(
+          () => {
+            closeModal();
+          }
+        );
       }
 
       if (modalType.value === "deleteModerator") {
@@ -363,17 +409,21 @@ export default {
       }
 
       if (modalType.value === "block") {
-        dispatch("users/actions/apiBlockedUser", id).then(() => {
-          blocked.value = true;
-          closeModal();
-        });
+        dispatch("users/actions/apiBlockedUser", { id, searchQuery }).then(
+          () => {
+            blocked.value = true;
+            closeModal();
+          }
+        );
       }
 
       if (modalType.value === "unblock") {
-        dispatch("users/actions/apiUnblockUser", id).then(() => {
-          blocked.value = false;
-          closeModal();
-        });
+        dispatch("users/actions/apiUnblockUser", { id, searchQuery }).then(
+          () => {
+            blocked.value = false;
+            closeModal();
+          }
+        );
       }
     };
 

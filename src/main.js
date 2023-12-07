@@ -21,9 +21,14 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/en';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ru');
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.guess() 
 
 const app = createApp(App);
 
@@ -32,6 +37,7 @@ app
   .use(store)
   .use(chat, {
     server: '82.202.214.42'
+    // server: 'localhost:8080'
   })
   .use(vClickOutside)
   .use(useVuelidate)

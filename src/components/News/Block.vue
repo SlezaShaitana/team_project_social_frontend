@@ -250,7 +250,7 @@
         >
           <div
             class="news-block__actions-block news-block__comments-btn"
-            @click="toggleComments"
+            @click="toggleComments()"
             :title="
               !openCommnets
                 ? translationsLang.newsBlockCommentTitleFirst
@@ -272,7 +272,7 @@
             :active="info.myLike"
             :reaction="info.myReaction"
             :quantity="info.likeAmount"
-            :reactions-info="info.reactions"
+            :reactions-info="info.reactionType"
           />
 
           <!-- <div class="news-block__actions-block">
@@ -303,7 +303,7 @@
                 currentComments.page + 1 !== currentComments.totalPages
               "
               class="post-block__comment-more"
-              @click.prevent="showMore"
+              @click.prevent="showMore()"
             >
               {{ translationsLang.newsBlockCommentMore }}
             </button>
@@ -392,7 +392,8 @@ export default {
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const comments = computed(() => state.profile.comments.comments);
 
-    const currentComments = computed(() => comments[props.info.id]);
+    const currentComments = computed(() => comments.value[props.info.id]);
+
     const displayedText = computed(() => {
       const words = props.info.postText.split(" ");
       if (words.length > 100 && !openText.value) {
@@ -430,12 +431,20 @@ export default {
     const toggleComments = async () => {
       const isSetComments = !!currentComments.value;
       const currentPage = isSetComments ? currentComments.value.page : null;
-      if (!isSetComments)
-        await dispatch("profile/comments/commentsById", {
-          postId: props.info.id,
-          currentPage,
-        });
-      openCommnets.value = !openCommnets.value;
+      if (!isSetComments) {
+        try {
+          await dispatch("profile/comments/commentsById", {
+            postId: props.info.id,
+            currentPage,
+          });
+          openCommnets.value = !openCommnets.value;
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        openCommnets.value = !openCommnets.value;
+      }
+
     };
 
     const showMore = async () => {

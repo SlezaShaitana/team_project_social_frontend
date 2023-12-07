@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <form class="im-chat__enter" action="#" @submit.prevent="onSubmitMessage">
+    <form class="im-chat__enter" action="#" @submit.prevent="onSubmitMessage()">
       <input
         class="im-chat__enter-input"
         type="text"
@@ -89,7 +89,7 @@
       <button
         v-if="mes.length > 0"
         class="im-chat__enter-submit"
-        @click.prevent="onSubmitMessage"
+        @click.prevent="onSubmitMessage()"
       >
         <submit-icon />
       </button>
@@ -116,9 +116,9 @@ import ChatMessage from "@/components/Im/ChatMessage.vue";
 import SubmitIcon from "@/Icons/SubmitIcon.vue";
 import dayjs from "dayjs";
 
-const makeHeader = (msgDate) => {
-  return { id: `group-${msgDate}`, stubDate: true, date: msgDate };
-};
+// const makeHeader = (msgDate) => {
+//   return { id: `group-${msgDate}`, stubDate: true, date: msgDate };
+// };
 
 export default {
   name: "ImChat",
@@ -130,7 +130,7 @@ export default {
 
   props: {
     info: Object,
-    messages: Array,
+    // messagesData: Object,
     online: Boolean,
     userInfo: Array,
   },
@@ -144,7 +144,9 @@ export default {
     const lastId = ref(-1);
     const infoChatUser = ref(null);
     const messageDialog = ref([]);
-    const messages = ref(props.messages);
+    const numberPage = ref(null);
+    const checkNumberPage = ref(null);
+    const isProcessing = ref(false);
     const follow = ref(false);
     const vslRef = ref(null);
     const instance = getCurrentInstance();
@@ -152,24 +154,13 @@ export default {
     const { translationsLang } = useTranslations();
 
     const getInfo = computed(() => getters["profile/info/getInfo"]);
+    const getLastMessages = computed(
+      () => getters["profile/dialogs/getLastMessages"]
+    );
+    const getNextMessages = computed(
+      () => getters["profile/dialogs/getNextMessages"]
+    );
 
-    const messagesGrouped = computed(() => {
-      let groups = [];
-      let headerDate = null;
-
-      for (let i = 0; i < props.messages.length; i++) {
-        const msg = props.messages[i];
-        const msgDate = new Date(msg.time).toDateString();
-        if (msgDate !== headerDate) {
-          headerDate = msgDate;
-          groups.push(makeHeader(headerDate));
-        }
-        msg.isSentByMe = msg.authorId === getInfo.value.id;
-        msg.id = `message-${i}`; // добавляем уникальный ключ
-        groups.push(msg);
-      }
-      return groups;
-    });
     const getInfoConversationPartner = computed(() =>
       props.info?.conversationPartner1 === getInfo.value?.id
         ? props.info?.conversationPartner2
@@ -183,33 +174,35 @@ export default {
       )
     );
 
-    watch(messages, () => {
-      if (follow.value) setVirtualListToBottom();
-    });
-
     watch(getInfoConversationPartner, async () => {
-      getMessageChat();
+      loadLastMessagesChat();
     });
 
     onMounted(async () => {
-      // follow.value = true;
-      // if (follow.value) setVirtualListToBottom();
-      getMessageChat();
+      loadLastMessagesChat();
       follow.value = true;
-      if (follow.value) setVirtualListToBottom();
       await axios.put(`dialogs/${props.info.id}`);
       if (!getInfo.value) {
         await dispatch("profile/info/apiInfo");
         getInfoChat();
       }
 
-      // nextTick(() => {
-      //   this.$el.scrollTop = this.$el.scrollHeight;
-      // });
-
       await $socket.connect();
       $socket.subscribe("socket event", (messagePayload) => {
-        newMessage(messagePayload);
+        if (messagePayload.type === "MESSAGE") {
+          newMessage(messagePayload);
+        } else if (messagePayload.type === "NOTIFICATION") {
+          return;
+          // commit("profile/notifications/setNotifications", messagePayload);
+        }
+      });
+
+      nextTick(() => {
+        setTimeout(() => {
+          if (vslRef.value) {
+            setVirtualListToBottom();
+          }
+        }, 800);
       });
     });
 
@@ -221,6 +214,7 @@ export default {
           ? props.info.conversationPartner1
           : null;
       console.log(conversationPartnerId);
+      console.log(getInfo.value.id);
       const user = props.userInfo.find(
         (user) => user.id === conversationPartnerId
       );
@@ -228,22 +222,26 @@ export default {
     };
 
     const newMessage = (message) => {
-      const payload = {
-        type: "MESSAGE",
-        recipientId: props.info.conversationPartner2,
-        data: {
-          time: null,
-          conversationPartner1: props.info.conversationPartner1,
-          conversationPartner2: props.info.conversationPartner2,
-          messageText: message.data.messageText,
-          readStatus: null,
-          dialogId: props.info.id,
-        },
-      };
-      commit("profile/dialogs/addOneMessage", payload.data);
-      getMessageChat();
-      lastId.value -= 1;
-      mes.value = "";
+      if (message.data) {
+        const payload = {
+          type: "MESSAGE",
+          recipientId: message.recipientId,
+          data: {
+            time: message.data.time,
+            conversationPartner1: message.data.conversationPartner1,
+            conversationPartner2: message.data.conversationPartner2,
+            messageText: message.data.messageText,
+            readStatus: null,
+            id: message.data.dialogId,
+          },
+        };
+        commit("profile/dialogs/setNewMessage", payload.data);
+        loadMessageChat(payload.data);
+        lastId.value -= 1;
+        mes.value = "";
+      } else {
+        return;
+      }
     };
 
     const onSubmitMessage = () => {
@@ -252,55 +250,96 @@ export default {
         type: "MESSAGE",
         recipientId: props.info.conversationPartner2,
         data: {
-          time: null,
+          time: dayjs(new Date()).utc().format("YYYY-MM-DDTHH:mm:ss.SSSSSS[Z]"),
           conversationPartner1: props.info.conversationPartner1,
           conversationPartner2: props.info.conversationPartner2,
           messageText: mes.value,
           readStatus: null,
           dialogId: props.info.id,
+          id: props.info.id,
         },
       };
-      commit("profile/dialogs/addOneMessage", payload.data);
-      getMessageChat();
+      commit("profile/dialogs/setSubmitMessage", payload.data);
+      loadMessageChat(payload.data);
       $socket.sendMessage(payload);
       lastId.value -= 1;
       mes.value = "";
     };
 
     const onScrollToTop = async () => {
-      if (vslRef.value) {
+      if (vslRef.value && !isProcessing.value) {
+        isProcessing.value = true;
         if (!isHistoryEndReached()) {
-          let [oldest] = messagesGrouped.value;
+          if (numberPage.value >= 0) {
+            fetching.value = true;
+            await dispatch("profile/dialogs/loadNextMessages", {
+              id: getInfoConversationPartner.value,
+              countPage: numberPage.value,
+              direction: "asc",
+            });
+            numberPage.value -= 1;
+          } else {
+            commit("profile/dialogs/markEndOfHistory");
+            return;
+          }
+          if (checkNumberPage.value === getLastMessages.value.totalPages - 2) {
+            const filteredMessageByTime = getNextMessages.value.filter(
+              (item2) =>
+                !getLastMessages.value.messages.some(
+                  (item1) => item1.time === item2.time
+                )
+            );
 
-          fetching.value = true;
-          await dispatch("profile/dialogs/loadOlderMessages"); // нет такого действия
-          setVirtualListToOffset(1);
+            messageDialog.value = [
+              ...filteredMessageByTime,
+              ...messageDialog.value,
+            ];
+
+            nextTick(() => {
+              const offset = filteredMessageByTime.reduce(
+                (sum) => sum + 60,
+                0
+              );
+
+              setVirtualListToOffset(offset);
+              fetching.value = false;
+              isProcessing.value = false;
+            });
+          } else {
+            messageDialog.value = [
+              ...getNextMessages.value,
+              ...messageDialog.value,
+            ];
+          }
 
           nextTick(() => {
-            let offset = 0;
-            for (const groupedMsg of messagesGrouped.value) {
-              if (groupedMsg.id === oldest.id) break;
-              offset += vslRef.value.getSize(groupedMsg.id);
-            }
+            const offset = getNextMessages.value.reduce(
+              (sum) => sum + 60,
+              0
+            );
 
             setVirtualListToOffset(offset);
             fetching.value = false;
+            isProcessing.value = false;
           });
         }
       }
     };
 
-    const getMessageChat = () => {
-      axios
-        .get(
-          `dialogs/messages?recipientId=${getInfoConversationPartner.value}&page=0&sort=time,asc`
-        )
-        .then((response) => {
-          messageDialog.value = response.data.content;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    // const getHeightOfMessage = () => {
+    //   return 40;
+    // };
+
+    const loadLastMessagesChat = async () => {
+      const messages = [...getLastMessages.value.messages];
+      messageDialog.value = messages.reverse();
+      numberPage.value = getLastMessages.value.totalPages - 2;
+      checkNumberPage.value = getLastMessages.value.totalPages - 2;
+    };
+
+    const loadMessageChat = async (message) => {
+      messageDialog.value = [...messageDialog.value, message];
+      if (follow.value) setVirtualListToBottom();
     };
 
     const setVirtualListToBottom = () => {
@@ -311,8 +350,14 @@ export default {
       }, 100);
     };
 
-    const onScroll = () => {
+    const onScroll = (event) => {
       follow.value = true;
+      const scrollTop = event.target.scrollTop;
+      const threshold = 10;
+
+      if (scrollTop <= threshold) {
+        onScrollToTop();
+      }
     };
 
     const onScrollToBottom = () => {
@@ -355,12 +400,11 @@ export default {
       vslRef,
       translationsLang,
       getInfo,
-      messagesGrouped,
+      getNextMessages,
       getInfoConversationPartner,
       filteredUserInfo,
       onSubmitMessage,
       onScrollToTop,
-      getMessageChat,
       onScroll,
       onScrollToBottom,
       isHistoryEndReached,

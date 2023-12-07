@@ -3,7 +3,7 @@
     action="#"
     class="comment-add"
     :class="{ 'is-subcomment': isSubcomment }"
-    @submit.prevent=""
+    @submit.prevent="onSubmitComment()"
   >
     <div class="comment-add__pic" v-if="getInfo.photo">
       <img :src="getInfo.photo" :alt="getInfo.firstName" />
@@ -15,6 +15,7 @@
 
     <div class="comment-add__input-container">
       <input
+        ref="addInput"
         type="text"
         minlength="5"
         class="comment-add__input"
@@ -24,46 +25,23 @@
             : translationsLang.commentAddPlaceholderSecond
         "
         v-model="commentText"
-        v-on:keydown.ctrl.enter="onSubmitComment"
+        v-on:keydown.ctrl.enter="onSubmitComment()"
       />
-      <emoji-picker @emoji="onEmojiClicked" :search="search" source="apple">
-        <template #invoker="{ events: { click: clickEvent } }">
-          <button class="emoji-invoker" @click.stop="clickEvent">
-            <emoji-icon />
-          </button>
-        </template>
 
-        <template #picker="{ emojis, insert }">
-          <div class="emoji-picker">
-            <div class="emoji-picker__search">
-              <input type="text" v-model="search" v-focus />
-            </div>
+      <EmojiIconComment
+        class="emoji-icon-comment"
+        @click.prevent="openEmojiPicker()"
+      />
 
-            <div>
-              <div v-for="(emojiGroup, category) in emojis" :key="category">
-                <h5>{{ category }}</h5>
-                <div class="emojis">
-                  <span
-                    v-for="(emoji, emojiName) in emojiGroup"
-                    :key="emojiName"
-                    @click="insert(emoji)"
-                    :title="emojiName"
-                  >
-                    {{ emoji }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
+      <emoji-picker
+        v-if="isOpenEmojiPicker"
+        :native="true"
+        @select="onSelectEmoji"
+        hide-search
+      >
       </emoji-picker>
     </div>
-    <button
-      class="comment-add__submit-btn"
-      type="submit"
-      useStore
-      @click.prevent="onSubmitComment"
-    >
+    <button class="comment-add__submit-btn" type="submit" useStore>
       <submit-icon />
     </button>
   </form>
@@ -74,33 +52,23 @@ import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import useTranslations from "@/composables/useTranslations";
 import EmojiPicker from "vue3-emoji-picker";
-import 'vue3-emoji-picker/css'
-import EmojiIcon from "@/Icons/EmojiIcon.vue";
+import "vue3-emoji-picker/css";
+import EmojiIconComment from "@/Icons/EmojiIconComment.vue";
 import SubmitIcon from "@/Icons/SubmitIcon.vue";
 import UnknowUser from "@/Icons/UnknowUser.vue";
 
 export default {
   name: "CommentAdd",
-
   components: {
     EmojiPicker,
-    EmojiIcon,
+    EmojiIconComment,
     SubmitIcon,
     UnknowUser,
   },
-
-  directives: {
-    focus: {
-      inserted(el) {
-        el.focus();
-      },
-    },
-  },
-
   props: {
     modelValue: String,
     id: [Number, String],
-    parentId: Number,
+    parentId: String,
     isSubcomment: {
       type: Boolean,
       default: false,
@@ -108,37 +76,59 @@ export default {
   },
 
   setup(props, { emit }) {
-    const store = useStore();
+    const { getters } = useStore();
     const input = ref("");
     const search = ref("");
-
+    const addInput = ref(null);
+    const isOpenEmojiPicker = ref(false);
     const { translationsLang } = useTranslations();
 
-    const getInfo = computed(() => store.getters["profile/info/getInfo"]);
+    const getInfo = computed(() => getters["profile/info/getInfo"]);
+
     const commentText = computed({
       get: () => props.modelValue,
       set: (value) => emit("update:modelValue", value),
     });
 
     const onSubmitComment = () => {
-      emit("update:submited");
+      emit("submited");
     };
 
-    const onEmojiClicked = (emoji) => {
-      commentText.value += emoji;
+    const onSelectEmoji = (emoji) => {
+      commentText.value += emoji.i;
+    };
+
+    const openEmojiPicker = () => {
+      isOpenEmojiPicker.value = !isOpenEmojiPicker.value;
+    };
+
+    const focusInput = () => {
+      if (addInput.value) {
+        addInput.value.focus();
+      }
+    };
+
+    const setFocusInput = () => {
+      if (addInput.value) {
+        addInput.value.focus();
+      }
     };
 
     return {
       input,
       search,
+      addInput,
+      isOpenEmojiPicker,
       translationsLang,
       getInfo,
       commentText,
       onSubmitComment,
-      onEmojiClicked,
+      onSelectEmoji,
+      openEmojiPicker,
+      focusInput,
+      setFocusInput,
     };
   },
-  expose: ["setFocus"],
 };
 </script>
 
@@ -214,6 +204,29 @@ export default {
   background #ececec
   cursor pointer
 
+.v3-emoji-picker
+  height 210px
+  width 260px
+  position absolute
+  top -125px
+  right -267px
+
+.v3-emoji-picker .v3-header
+  padding: 10px 10px 10px;
+
+.v3-emoji-picker .v3-body
+  padding-bottom 6px
+
+.v3-emoji-picker .v3-footer
+  padding-top 7px
+  padding-bottom 7px
+
+.v3-emoji-picker .v3-footer .v3-tone
+  display none
+
+.v3-emoji-picker .v3-body .v3-body-inner .v3-group h5.v3-sticky
+  font-size 10px
+
 .comment-add__input-container
   position relative
   display flex
@@ -221,6 +234,10 @@ export default {
   margin-right 10px
   align-items center
   justify-content space-between
+
+.emoji-icon-comment
+  position absolute
+  right 10px
 
 .open-comment
   border-color #575757

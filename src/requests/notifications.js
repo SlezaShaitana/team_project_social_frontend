@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 export default {
-  get() {
-    return axios.get(`notifications`);
+  get(countPage, direction) {
+    return axios.get(`notifications/page?page=${countPage}&sort=sentTime,${direction}`);
   },
 
   readed() {

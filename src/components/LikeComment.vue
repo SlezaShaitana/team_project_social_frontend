@@ -86,7 +86,7 @@ export default {
     });
 
     const onChange = () => {
-      emit("update:liked", localActive.value);
+      emit("liked", localActive.value);
       if (localActive.value) localQuantity.value = -1;
       else localQuantity.value = +1;
       localActive.value = !localActive.value;

@@ -15,7 +15,8 @@
           <div v-if="info.emojiStatus === '0'" class="profile-info__emoji-item">
             <img src="/static/img/user/status_guru.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus1 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus1 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer1 }}
@@ -73,7 +74,8 @@
           >
             <img src="/static/img/user/status_new.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus2 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus2 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer2 }}
@@ -131,7 +133,8 @@
           >
             <img src="/static/img/user/status_escp.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus3 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus3 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer3 }}
@@ -189,7 +192,8 @@
           >
             <img src="/static/img/user/status_teacher.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus4 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus4 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer4 }}
@@ -247,7 +251,8 @@
           >
             <img src="/static/img/user/status_student.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus5 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus5 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer5 }}
@@ -305,7 +310,8 @@
           >
             <img src="/static/img/user/status_love.png" />
             <span
-              >{{ info.firstName }} {{ translationsLang.profileEmojiStatus6 }}</span
+              >{{ info.firstName }}
+              {{ translationsLang.profileEmojiStatus6 }}</span
             >
             <p>
               {{ translationsLang.profileEmojiStatusDisclamer6 }}
@@ -541,7 +547,7 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountUnsubscribe }}
@@ -556,10 +562,11 @@
                 "
                 href="#"
                 class="profile-info__btn subscribe btn-send__message"
-                @click.prevent="subscribe(info.friendId)"
+                @click.prevent="subscribe(info.id)"
               >
                 <img
-                  src="@/assets/static/img/sidebar/admin/comments.svg" alt ="img.svg"
+                  src="@/assets/static/img/add.svg"
+                  alt="img.svg"
                 />
                 {{ translationsLang.profileAccountSubscribe }}
               </a>
@@ -567,9 +574,13 @@
                 v-if="infoFriend.statusCode === 'REQUEST_FROM'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="acceptFriendRequest(info.friendId)"
+                @click.prevent="acceptFriendRequest(info.id)"
               >
-                <img class="accept" src="@/assets/static/img/add.svg" alt="img.svg" />
+                <img
+                  class="accept"
+                  src="@/assets/static/img/add.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountAcceptRequests }}
               </a>
               <!-- Сообщение -->
@@ -579,7 +590,11 @@
                 class="profile-info__btn btn-send__message"
                 @click.prevent="onSentMessage"
               >
-                <img src="@/assets/static/img/sidebar/im.svg" alt="img.svg" />
+                <img
+                  class="svg-width"
+                  src="@/assets/static/img/sidebar/im.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountSendMessage }}
               </a>
               <!-- Блокировка/разблокировка -->
@@ -591,11 +606,12 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="unBlockedUser(info.friendId)"
+                @click.prevent="unBlockedUser(info.id)"
               >
                 <img
                   class="filter-green"
-                  src="@/assets/static/img/security-system-unlock.svg" alt ="img.svg"
+                  src="@/assets/static/img/security-system-unlock.svg"
+                  alt="img.svg"
                 />
                 {{ translationsLang.profileAccountUnblocking }}
               </a>
@@ -603,9 +619,9 @@
                 v-else
                 href="#"
                 class="profile-info__btn block btn-send__message"
-                @click.prevent="blockedUser(info.friendId)"
+                @click.prevent="blockedUser(info.id)"
               >
-                <img src="@/assets/static/img/unblocked.svg" alt ="img.svg" />
+                <img src="@/assets/static/img/unblocked.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountBlocking }}
               </a>
               <!-- Добавление в друзья/отмена -->
@@ -613,7 +629,7 @@
                 v-if="infoFriend.statusCode === 'FRIEND'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountDeleteFriend }}
@@ -622,7 +638,7 @@
                 v-if="infoFriend.statusCode === 'REQUEST_TO'"
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="cancelApiRequests(info.friendId)"
+                @click.prevent="cancelApiRequests(info.id)"
               >
                 <img src="@/assets/static/img/delete.svg" alt="img.svg" />
                 {{ translationsLang.profileAccountCancelFriend }}
@@ -638,9 +654,13 @@
                 "
                 href="#"
                 class="profile-info__btn btn-send__message"
-                @click.prevent="addToFriend(info.friendId)"
+                @click.prevent="addToFriend(info.id)"
               >
-                <img class="accept" src="@/assets/static/img/add.svg" alt="img.svg" />
+                <img
+                  class="accept"
+                  src="@/assets/static/img/friend-add.svg"
+                  alt="img.svg"
+                />
                 {{ translationsLang.profileAccountAddFriend }}
               </a>
             </div>
@@ -715,9 +735,18 @@
       <modal v-model="modalShow">
         <p v-if="modalText">{{ modalText }}</p>
         <template v-slot:actions>
-          <button @click.prevent="onConfirm">Да</button>
-          <button variant="red" bordered="bordered" @click="closeModal">
-            Отмена
+          <button class="btn" @click="onConfrim(targetId)">
+            <span class="helper"></span>
+            {{ translationsLang.yes }}
+          </button>
+          <button
+            class="btn btn--red btn--bordered"
+            variant="red"
+            bordered="bordered"
+            @click="closeModal()"
+          >
+            <span class="helper"></span>
+            {{ translationsLang.cancel }}
           </button>
         </template>
       </modal>
@@ -848,13 +877,13 @@ export default {
     });
 
     onMounted(() => {
-      let searchQuery = {
+      const searchQuery = {
         ...getUsersQueryParams.value,
         page: page.value - 1,
         size: size.value,
       };
       if (users.value.length === 0) {
-        dispatch("global/search/searchUsers", searchQuery);
+        dispatch("global/search/searchUsers", { payload: searchQuery });
       }
     });
 
@@ -984,7 +1013,7 @@ export default {
     };
 
     const cancelApiRequests = (id) => {
-      dispatch("profile/friends/apiDeleteFriends", id);
+      dispatch("profile/friends/apiDeleteFriends", {id});
       locationReload();
     };
 
@@ -1015,17 +1044,17 @@ export default {
         });
         return;
       }
-      dispatch("profile/friends/apiSubscribe", id);
+      dispatch("profile/friends/apiSubscribe", {id});
       locationReload();
     };
 
     const blockedUser = (id) => {
-      dispatch("users/actions/apiBlockedUser", id);
+      dispatch("users/actions/apiBlockedUser", {id});
       locationReload();
     };
 
     const unBlockedUser = (id) => {
-      dispatch("users/actions/apiUnblockUser", id);
+      dispatch("users/actions/apiUnblockUser", {id});
       locationReload();
     };
 
@@ -1539,4 +1568,7 @@ export default {
       img
         width 130px
         height 130px
+
+    .svg-width
+      width 15px
 </style>

@@ -46,10 +46,6 @@
 import { computed } from "vue";
 
 export default {
-  model: {
-    prop: "page",
-    event: "paginate",
-  },
   props: ["page", "count", "perPage"],
 
   setup(props, { emit }) {
@@ -68,7 +64,7 @@ export default {
     });
 
     const paginate = (selectPage) => {
-      emit("update:modelValue", selectPage);
+      emit("update:page", selectPage);
     };
 
     return {

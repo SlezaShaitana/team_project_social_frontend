@@ -82,16 +82,14 @@ export default {
     const possibleFriends = computed(() =>
       getters["profile/friends/getResultById"]("recommendations")
     );
-    const recomendationUsers = computed(() =>
-      getters["global/search/getRecomendationUsers"]
+    const recomendationUsers = computed(
+      () => getters["global/search/getRecomendationUsers"]
     );
     const getUsersQueryParamsRecomend = computed(
       () => getters["global/search/getUsersQueryParamsRecomend"]
     );
 
     const sortedUsers = computed(() => {
-      console.log(recomendationUsers.value.content);
-
       const usersCopy = [...recomendationUsers.value.content];
       return usersCopy.sort((a, b) => {
         const ratingA = getFriendRating(a.id);
@@ -130,9 +128,10 @@ export default {
     const apiAddFriends = ({ id, statusCode }) => {
       if (statusCode === null) {
         statusCode = "";
-        dispatch("profile/friends/apiAddFriends", { id, statusCode });
+        return dispatch("profile/friends/apiAddFriends", { id, statusCode });
       }
-      dispatch("profile/friends/apiAddFriends", { id, statusCode });
+
+      return dispatch("profile/friends/apiAddFriends", { id, statusCode });
     };
 
     return {

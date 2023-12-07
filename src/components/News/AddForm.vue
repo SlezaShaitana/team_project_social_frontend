@@ -141,7 +141,7 @@
           >
             {{ translationsLang.newsAddQueued }}
           </button>
-          <button class="post-btn-planing" @click.prevent="submitForm">
+          <button class="post-btn-planing" @click.prevent="submitForm()">
             {{ translationsLang.newsAddPosted }}
           </button>
         </div>
@@ -505,7 +505,7 @@ export default {
         tags: tags.value,
         publishDate: isPlaning.value && lastDate.value,
       }).then(() => {
-        emit("update:submit-complete");
+        emit("submit-complete");
         commit("global/storagePostPhoto/setStoragePostPhoto", null);
       });
     };

@@ -1,4 +1,4 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 import account from '@/requests/account';
 
 export default {
@@ -14,7 +14,7 @@ export default {
         ...state.info,
       };
       result.fullName = result.firstName + ' ' + result.lastName;
-      result.ages = moment().diff(result.birthDate, 'years');
+      result.ages = dayjs().diff(result.birthDate, 'years');
       return result;
     },
   },

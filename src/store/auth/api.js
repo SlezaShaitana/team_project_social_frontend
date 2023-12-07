@@ -62,6 +62,7 @@ export default {
         clearInterval(state.pollingToken);
         return;
       }
+      // localStorage.removeItem('user-token');
       const refreshToken = localStorage.getItem('refresh-token');
 
       try {

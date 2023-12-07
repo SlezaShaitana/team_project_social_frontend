@@ -14,7 +14,7 @@
             class="main-layout__search"
             action="#"
             v-if="getInfo && !getInfo.isDeleted"
-            @submit.prevent="onSearch"
+            @submit.prevent="onSearch()"
           >
             <button class="main-layout__search-btn">
               <search-icon />
@@ -33,15 +33,15 @@
             <span class="indicator" v-if="getNotificationsLength">{{
               getNotificationsLength
             }}</span>
-            <span @click="togglePush">
+            <span @click="togglePush()">
               <push-icon
                 :isNotEmpty="getNotificationsLength > 0 && !isOpenPush"
               />
             </span>
-            <push :isOpen="isOpenPush" @close-push="togglePush()" />
+            <push :isOpen="isOpenPush" @close-push="togglePush" />
           </div>
           <div
-            @click="toggleActionsProfile()"
+            @click="toggleActionsProfile"
             class="main-layout__user"
             :class="{ 'active__profile-actions': showActionsProfile }"
             v-if="getInfo"
@@ -135,14 +135,14 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, getCurrentInstance } from "vue";
+import { computed, onMounted, ref, getCurrentInstance } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import useTranslations from "@/composables/useTranslations";
 import vClickOutside from "click-outside-vue3";
 import Push from "@/components/MainLayout/Push";
-import LanguageBlock from "@/components/FormLayout/Footer.vue";
 import ChangeTheme from "@/components/Theme/ChangeTheme.vue";
+import LanguageBlock from "@/components/FormLayout/Footer.vue";
 import SearchIcon from "@/Icons/SearchIcon.vue";
 import PushIcon from "@/Icons/PushIcon.vue";
 import ThemeIcon from "@/Icons/ThemeIcon.vue";
@@ -178,30 +178,27 @@ export default {
     const showActionsProfile = ref(false);
     const instance = getCurrentInstance();
     const $socket = instance.appContext.config.globalProperties.$socket;
-    const elementRef = ref(null);
+    const elementsRef = ref(null);
     const { translationsLang } = useTranslations();
 
-    const dialogs = computed(() => state.profile.dialogs.dialogs);
-    const newMessage = computed(() => state.profile.dialogs.newMessage);
-    const searchText = computed(() => getters["global/search/searchText"]);
     const getInfo = computed(() => getters["profile/info/getInfo"]);
+    const searchText = computed(() => getters["global/search/searchText"]);
     const getNotificationsLength = computed(
       () => getters["profile/notifications/getNotificationsLength"]
     );
+    const dialogs = computed(() => state.profile.dialogs.dialogs);
+    const newMessage = computed(() => state.profile.dialogs.newMessage);
 
     const isAdminPage = computed(() => route.path.indexOf("admin") !== -1);
     const activeDialogId = computed(() => route.params.activeDialogId);
 
-    // watch(
-      // () => dialogs,
-      // (newVal) => {
-      //   let unreadCount = 0;
-      //   newVal.forEach((item) => {
-      //     unreadCount += item.unreadCount;
-      //   });
-      //   commit("profile/dialogs/setUnreadedMessages", unreadCount);
-      // }
-    // );
+    // watch(dialogs, (newVal) => {
+    //   let unreadCount = 0;
+    //   newVal.forEach((item) => {
+    //     unreadCount += item.unreadCount;
+    //   });
+    //   commit('profile/dialogs/setUnreadedMessages', unreadCount);
+    // });
 
     onMounted(async () => {
       // if (route.name !== "Im" && route.name !== "ImChat") {
@@ -260,8 +257,8 @@ export default {
       showActionsProfile.value = !showActionsProfile.value;
     };
 
-   const closeActionsProfile = (e) => {
-      if (elementRef.value && !elementRef.value.contains(e.target)) {
+    const closeActionsProfile = (e) => {
+      if (elementsRef.value && elementsRef.value.contains(e.target)) {
         showActionsProfile.value = false;
       }
     };
@@ -277,7 +274,7 @@ export default {
     };
 
     const setSearchText = (event) => {
-      commit("global/search/setSearchText", event);
+      return commit("global/search/setSearchText", event);
     };
 
     return {
@@ -285,12 +282,13 @@ export default {
       isOpenSearch,
       showActionsProfile,
       translationsLang,
+      getInfo,
+      searchText,
+      getNotificationsLength,
       dialogs,
       newMessage,
-      searchText,
-      getInfo,
-      getNotificationsLength,
       isAdminPage,
+      activeDialogId,
       onLogout,
       toggleActionsProfile,
       closeActionsProfile,
