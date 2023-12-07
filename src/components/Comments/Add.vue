@@ -59,14 +59,12 @@ import UnknowUser from "@/Icons/UnknowUser.vue";
 
 export default {
   name: "CommentAdd",
-
   components: {
     EmojiPicker,
     EmojiIconComment,
     SubmitIcon,
     UnknowUser,
   },
-
   props: {
     modelValue: String,
     id: [Number, String],
@@ -78,15 +76,15 @@ export default {
   },
 
   setup(props, { emit }) {
-    const store = useStore();
+    const { getters } = useStore();
     const input = ref("");
     const search = ref("");
     const addInput = ref(null);
     const isOpenEmojiPicker = ref(false);
-
     const { translationsLang } = useTranslations();
 
-    const getInfo = computed(() => store.getters["profile/info/getInfo"]);
+    const getInfo = computed(() => getters["profile/info/getInfo"]);
+
     const commentText = computed({
       get: () => props.modelValue,
       set: (value) => emit("update:modelValue", value),
@@ -108,11 +106,18 @@ export default {
       if (addInput.value) {
         addInput.value.focus();
       }
-    }
+    };
+
+    const setFocusInput = () => {
+      if (addInput.value) {
+        addInput.value.focus();
+      }
+    };
 
     return {
       input,
       search,
+      addInput,
       isOpenEmojiPicker,
       translationsLang,
       getInfo,
@@ -121,6 +126,7 @@ export default {
       onSelectEmoji,
       openEmojiPicker,
       focusInput,
+      setFocusInput,
     };
   },
 };

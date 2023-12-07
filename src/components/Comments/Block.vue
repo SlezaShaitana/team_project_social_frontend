@@ -1,12 +1,12 @@
 <template>
-  <div class="comment-block" :class="{ 'show-comments': isShowSubComments }">
+  <div class="comment-block" :class="{ 'show-comments': isShowSubComments }" >
     <template v-if="admin">
       <div class="edit" v-tooltip.bottom="'Разблокировать'" v-if="blocked">
-        <img src="'@/assets/static/img/unblocked.svg'" alt="img.svg" />
+        <img src="@/assets/static/img/unblocked.svg" alt="img.svg" />
       </div>
 
       <div class="edit" v-tooltip.bottom="'Заблокировать'" v-else>
-        <img src="'@/assets/static/img/blocked.svg'" alt="img.svg" />
+        <img src="@/assets/static/img/blocked.svg" alt="img.svg" />
       </div>
     </template>
 
@@ -26,19 +26,19 @@
         class="comment-block__reviews-show"
         href="#"
         v-if="!currentSubComents && info.commentsCount"
-        @click.prevent="showSubComments"
+        @click.prevent="showSubComments()"
       >
-        {{ translationsДфтп.commentAnswerShow }} {{ info.commentsCount }}
+        {{ translationsLang.commentAnswerShow }} {{ info.commentsCount }}
         {{ answerText }}
       </a>
 
-      <div class="comment-block__reviews-list" v-show="currentSubComents">
+      <div class="comment-block__reviews-list" v-show="currentSubComents" >
         <transition name="fade">
-          <div v-if="currentSubComents" class="subcomments">
+          <div v-if="currentSubComents" class="subcomments" >
             <comment-main
               :isSubcomment="true"
               :admin="admin"
-              v-for="i in currentSubComents.value"
+              v-for="i in currentSubComents.currentComments"
               :key="i.id"
               :info="i"
               :edit="getInfo.id === i.author.id"
@@ -68,9 +68,9 @@
 <script>
 import { computed, ref } from "vue";
 import { useStore } from "vuex";
-import useTranslations from "@/composables/useTranslations";
 import CommentMain from "@/components/Comments/Main";
 import CommentAdd from "@/components/Comments/Add";
+import useTranslations from "@/composables/useTranslations";
 
 export default {
   name: "CommentBlock",
@@ -82,7 +82,6 @@ export default {
     edit: Boolean,
     deleted: Boolean,
   },
-
   setup(props, { emit }) {
     const { getters, state, dispatch } = useStore();
     const isShowSubComments = ref(false);
@@ -92,7 +91,7 @@ export default {
     const commentEditParentId = ref(null);
     const addCommentRef = ref(null);
     const { translationsLang } = useTranslations();
-    
+
     const getInfo = computed(() => getters["profile/info/getInfo"]);
     const subComments = computed(() => state.profile.comments.subComments);
 
@@ -102,6 +101,7 @@ export default {
         ? translationsLang.commentAnswerTextFirst
         : translationsLang.commentAnswerTextSecond;
     });
+
     const currentSubComents = computed(() => subComments.value[props.info.id]);
 
     const showSubComments = async () => {
@@ -114,7 +114,9 @@ export default {
     };
 
     const onAnswerSub = () => {
-      addCommentRef.value.setFocus();
+      if (addCommentRef.value) {
+        addCommentRef.value.setFocusInput();
+      }
     };
 
     const onAnswerMain = async () => {
@@ -159,29 +161,39 @@ export default {
       });
     };
 
-    const onEditSub = ({ parentId, id, commentValue }) => {
+    const onEditSub = ({ parentId, id, commentVal }) => {
       commentEdit.value = true;
-      commentText.value = commentValue;
+      commentText.value = commentVal;
       commentEditId.value = id;
       commentEditParentId.value = parentId;
       onAnswerSub();
     };
 
-    const onSubmitComment = () => {
-      dispatch("profile/comments/commentActions", {
-        isSubcomment: true,
-        edit: commentEdit.value,
-        postId: props.info.postId,
-        parentId: commentEdit.value ? commentEditParentId : props.info.id,
-        text: commentText.value,
-        id: commentEditId.value,
-      }).then(() => {
-        commentText.value = "";
-        commentEdit.value = false;
-        commentEditId.value = null;
-        commentEditParentId.value = null;
-        isShowSubComments.value = true;
-      });
+    const onSubmitComment = async () => {
+      try {
+        await dispatch("profile/comments/commentActions", {
+          isSubcomment: true,
+          edit: commentEdit.value,
+          postId: props.info.postId,
+          parentId: commentEdit.value
+            ? commentEditParentId.value
+            : props.info.id,
+          text: commentText.value,
+          id: commentEditId.value,
+        });
+
+        resetCommentState();
+      } catch (error) {
+        console.error("Ошибка при отправке комментария:", error);
+        // Опционально: обработка ошибок, например, показать сообщение пользователю
+      }
+    };
+
+    const resetCommentState = () => {
+      commentText.value = "";
+      commentEdit.value = false;
+      commentEditParentId.value = null;
+      isShowSubComments.value = true;
     };
 
     return {

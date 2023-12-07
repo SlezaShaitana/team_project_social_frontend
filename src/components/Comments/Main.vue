@@ -37,9 +37,9 @@
               {{ info.author.firstName + " " + info.author.lastName }}
             </router-link>
           </div>
-          <div class="comment-main__allactions-top">
-            <transition name="fade">
-              <div class="comment-main__actions" v-if="edit || deleted">
+          <transition name="fade">
+            <div class="comment-main__allactions-top" v-if="edit || deleted">
+              <div class="comment-main__actions">
                 <div
                   class="comment-main__icons-top"
                   v-if="edit"
@@ -55,8 +55,8 @@
                   <delete-comment />
                 </div>
               </div>
-            </transition>
-          </div>
+            </div>
+          </transition>
         </div>
 
         <div class="comment-main__text">
@@ -64,29 +64,25 @@
         </div>
 
         <div class="comment-main__actions">
-          <template>
-            <div class="comment-main__actions-button">
-              <span class="comment-main__time">{{
-                formatTime(info.time)
-              }}</span>
-              <a
-                class="comment-main__review"
-                href="#"
-                @click.prevent="mainReview()"
-              >
-                {{ translationsLang.commentAddAnswer }}
-              </a>
-            </div>
-            <div class="show__like">
-              <like-comment
-                fill="fill"
-                :quantity="info.likeAmount"
-                :active="info.myLike || info.likeAmount"
-                :id="info.id"
-                @liked="likeAction"
-              />
-            </div>
-          </template>
+          <div class="comment-main__actions-button">
+            <span class="comment-main__time">{{ formatTime(info.time) }}</span>
+            <a
+              class="comment-main__review"
+              href="#"
+              @click.prevent="answerComment()"
+            >
+              {{ translationsLang.commentAddAnswer }}
+            </a>
+          </div>
+          <div class="show__like">
+            <like-comment
+              fill="fill"
+              :quantity="info.likeAmount"
+              :active="info.myLike || info.likeAmount"
+              :id="info.id"
+              @liked="likeAction"
+            />
+          </div>
         </div>
       </div>
     </template>
@@ -96,12 +92,12 @@
 <script>
 import { ref } from "vue";
 import { useStore } from "vuex";
-import useTranslations from "@/composables/useTranslations";
-import dayjs from "dayjs";
 import LikeComment from "@/components/LikeComment";
 import EditIcon from "@/Icons/EditIcon.vue";
 import DeleteComment from "@/Icons/DeleteNewsIcon.vue";
 import UnknowUser from "@/Icons/UnknowUser.vue";
+import useTranslations from "@/composables/useTranslations";
+import dayjs from "dayjs";
 
 export default {
   name: "CommentMain",
@@ -116,7 +112,6 @@ export default {
       default: false,
     },
   },
-
   setup(props, { emit }) {
     const { dispatch } = useStore();
     const like = ref(props.info.myLike);
@@ -147,6 +142,10 @@ export default {
       else emit("delete-comment", props.info.id);
     };
 
+    const answerComment = () => {
+      emit("answer-comment");
+    };
+
     const editComment = () => {
       emit("edit-comment", {
         id: props.info.id,
@@ -159,10 +158,6 @@ export default {
       emit("recover-comment", props.info.id);
     };
 
-    const mainReview = () => {
-      emit("answer-comment");
-    };
-
     const formatTime = (time) => {
       return dayjs(time).fromNow();
     };
@@ -172,9 +167,9 @@ export default {
       translationsLang,
       likeAction,
       onDeleteComment,
+      answerComment,
       editComment,
       onRecoverComment,
-      mainReview,
       formatTime,
     };
   },

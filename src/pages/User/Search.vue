@@ -43,19 +43,20 @@ export default {
 
     const searchText = computed(() => getters["global/search/searchText"]);
     const tabSelect = computed(() => getters["global/search/tabSelect"]);
-    const tabs = computed(() => getters["global/search/tabs"]);
+    // const tabs = computed(() => getters["global/search/tabs"]);
 
-    watch(searchText, (newVal) => {
-      const newSelectTab = tabs.value.find((tab) => tab.text === newVal || tab.textEng === newVal);
-      if (newSelectTab === undefined) {
-        dispatch("global/alert/setAlert", {
-          status: "error",
-          text: "Неверное слово или с заглавной буквы!",
-        });
-        return;
-      }
-      console.log(newSelectTab.id);
-      commit("global/search/routePushWithQuery", newSelectTab.id);
+    watch(searchText, () => {
+      commit("global/search/routePushWithQuery", tabSelect.value);
+      // const newSelectTab = tabs.value.find((tab) => tab.text === newVal || tab.textEng === newVal);
+      // if (newSelectTab === undefined) {
+      //   dispatch("global/alert/setAlert", {
+      //     status: "error",
+      //     text: "Неверное слово или с заглавной буквы!",
+      //   });
+      //   return;
+      // }
+      // console.log(newSelectTab.id);
+      // commit("global/search/routePushWithQuery", newSelectTab.id);
     });
 
     onMounted(() => {

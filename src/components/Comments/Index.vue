@@ -26,12 +26,12 @@
 <script>
 import { computed, ref, watch } from "vue";
 import { useStore } from "vuex";
-import CommentBlock from "@/components/Comments/Block.vue";
-import CommentAdd from "@/components/Comments/Add.vue";
+import CommentBlock from "@/components/Comments/Block";
+import CommentAdd from "@/components/Comments/Add";
 
 export default {
   name: "CommentsIndex",
-  components: { CommentAdd, CommentBlock },
+  components: { CommentBlock, CommentAdd },
   props: {
     admin: Boolean,
     info: Object,
@@ -41,21 +41,23 @@ export default {
   },
 
   setup(props) {
-    const store = useStore();
-    const info = ref(props.info.currentComments);
+    const { getters, dispatch } = useStore();
     const commentText = ref("");
     const commentEdit = ref(false);
     const commentEditInfo = ref(null);
-    const isOpenComments = ref("");
     const addCommentRef = ref(null);
-    const likeAmout = ref(null);
+    const isOpenComments = ref(false);
+    const likeAmount = ref(props.info.likeAmount);
+    const info = ref(props.info);
+    const forceUpdate = ref(0);
 
-    const getInfo = computed(() => store.getters["profile/info/getInfo"]);
+    const getInfo = computed(() => getters["profile/info/getInfo"]);
+
     const showText = computed(() =>
       isOpenComments.value ? "скрыть" : "показать"
     );
 
-    watch(likeAmout, () => {
+    watch(likeAmount, () => {
       return props.info.totalElements;
     });
 
@@ -67,32 +69,28 @@ export default {
     };
 
     const onSubmitComment = () => {
-      store.dispatch(
-        "profile/comments/commentActions",
-        {
-          edit: commentEdit.value,
-          postId: props.id,
-          text: commentText.value,
-          id: commentEdit.value ? commentEditInfo.value.id : null,
-        }).then(() => {
-          commentText.value = "";
-          commentEdit.value = false;
-          commentEditInfo.value = null;
-        });
+      dispatch("profile/comments/commentActions", {
+        edit: commentEdit.value,
+        postId: props.id,
+        text: commentText.value,
+        id: commentEdit.value ? commentEditInfo.value.id : null,
+      }).then(() => {
+        commentText.value = "";
+        commentEdit.value = false;
+        commentEditInfo.value = null;
+      });
     };
-
     const setComputed = () => {
       info.value.subComments = info.value.subСomments
         ? info.value.subComments
         : [];
     };
-
     const showMore = async () => {
-      await store.dispatch("profile/comments/commentsById", {
+      await dispatch("profile/comments/commentsById", {
         postId: props.info.id,
         currentPage: props.info.comments.page,
       });
-      // $forceUpdate();
+      forceUpdate.value++;
     };
 
     return {

@@ -24,7 +24,7 @@
               type="text"
               :placeholder="translationsLang.searchPlaceholder"
               :value="searchText"
-              @input="onSearch($event.target.value)"
+              @input="setSearchText($event.target.value)"
             />
           </form>
         </div>
@@ -38,10 +38,10 @@
                 :isNotEmpty="getNotificationsLength > 0 && !isOpenPush"
               />
             </span>
-            <push :isOpen="isOpenPush" @close-push="togglePush()" />
+            <push :isOpen="isOpenPush" @close-push="togglePush" />
           </div>
           <div
-            @click="toggleActionsProfile()"
+            @click="toggleActionsProfile"
             class="main-layout__user"
             :class="{ 'active__profile-actions': showActionsProfile }"
             v-if="getInfo"
@@ -135,14 +135,14 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, getCurrentInstance } from "vue";
+import { computed, onMounted, ref, getCurrentInstance } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import useTranslations from "@/composables/useTranslations";
 import vClickOutside from "click-outside-vue3";
 import Push from "@/components/MainLayout/Push";
-import LanguageBlock from "@/components/FormLayout/Footer.vue";
 import ChangeTheme from "@/components/Theme/ChangeTheme.vue";
+import LanguageBlock from "@/components/FormLayout/Footer.vue";
 import SearchIcon from "@/Icons/SearchIcon.vue";
 import PushIcon from "@/Icons/PushIcon.vue";
 import ThemeIcon from "@/Icons/ThemeIcon.vue";
@@ -178,31 +178,27 @@ export default {
     const showActionsProfile = ref(false);
     const instance = getCurrentInstance();
     const $socket = instance.appContext.config.globalProperties.$socket;
-    const elementRef = ref(null);
-    const debounceTimeout = ref(null);
+    const elementsRef = ref(null);
     const { translationsLang } = useTranslations();
 
-    const dialogs = computed(() => state.profile.dialogs.dialogs);
-    const newMessage = computed(() => state.profile.dialogs.newMessage);
-    const searchText = computed(() => getters["global/search/searchText"]);
     const getInfo = computed(() => getters["profile/info/getInfo"]);
+    const searchText = computed(() => getters["global/search/searchText"]);
     const getNotificationsLength = computed(
       () => getters["profile/notifications/getNotificationsLength"]
     );
+    const dialogs = computed(() => state.profile.dialogs.dialogs);
+    const newMessage = computed(() => state.profile.dialogs.newMessage);
 
     const isAdminPage = computed(() => route.path.indexOf("admin") !== -1);
     const activeDialogId = computed(() => route.params.activeDialogId);
 
-    // watch(
-    // () => dialogs,
-    // (newVal) => {
+    // watch(dialogs, (newVal) => {
     //   let unreadCount = 0;
     //   newVal.forEach((item) => {
     //     unreadCount += item.unreadCount;
     //   });
-    //   commit("profile/dialogs/setUnreadedMessages", unreadCount);
-    // }
-    // );
+    //   commit('profile/dialogs/setUnreadedMessages', unreadCount);
+    // });
 
     onMounted(async () => {
       // if (route.name !== "Im" && route.name !== "ImChat") {
@@ -262,54 +258,43 @@ export default {
     };
 
     const closeActionsProfile = (e) => {
-      if (elementRef.value && !elementRef.value.contains(e.target)) {
+      if (elementsRef.value && elementsRef.value.contains(e.target)) {
         showActionsProfile.value = false;
       }
     };
 
-    const onSearch = (event) => {
-      if (debounceTimeout.value) {
-        clearTimeout(debounceTimeout.value);
-      }
-      debounceTimeout.value = setTimeout(() => {
-        commit("global/search/setSearchText", event);
-        dispatch("global/search/searchAll", searchText.value).then(() => {
-          router.push({ name: "Search", query: { text: searchText.value } });
-        });
-      }, 1000);
+    const onSearch = () => {
+      dispatch("global/search/searchAll", searchText.value).then(() => {
+        router.push({ name: "Search", query: { text: searchText.value } });
+      });
     };
 
     const togglePush = () => {
       isOpenPush.value = !isOpenPush.value;
     };
 
-    // const setSearchText = (event) => {
-    //   if (debounceTimeout.value) {
-    //     clearTimeout(debounceTimeout.value);
-    //   }
-
-    //   debounceTimeout.value = setTimeout(() => {
-    //     commit("global/search/setSearchText", event);
-    //   }, 1000);
-    // };
+    const setSearchText = (event) => {
+      return commit("global/search/setSearchText", event);
+    };
 
     return {
       isOpenPush,
       isOpenSearch,
       showActionsProfile,
       translationsLang,
+      getInfo,
+      searchText,
+      getNotificationsLength,
       dialogs,
       newMessage,
-      searchText,
-      getInfo,
-      getNotificationsLength,
       isAdminPage,
+      activeDialogId,
       onLogout,
       toggleActionsProfile,
       closeActionsProfile,
       onSearch,
       togglePush,
-      // setSearchText,
+      setSearchText,
     };
   },
 };

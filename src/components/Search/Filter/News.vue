@@ -117,25 +117,25 @@ export default {
     const onSearchNews = () => {
       const dataTags = updateTags.value;
       const dataTagsSplit = dataTags.map((tag) => tag.name);
-      const dateFrom =
-        dateFrom === "null" ? 0 : dayjs().subtract(1, dateFrom).valueOf();
-      const dateTo = (dateTo.value = dayjs().format(
+      const dateFromNew =
+        dateFrom.value === "null" ? 0 : dayjs().subtract(1, dateFrom.value).valueOf();
+      const dateToNew = (dateTo.value = dayjs().format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       ));
-      const formattedDateFrom = dayjs(dateFrom).format(
+      const formattedDateFrom = dayjs(dateFromNew).format(
         "YYYY-MM-DDTHH:mm:ss.SSS[Z]"
       );
       let searchQuery = {
         ...getNewsQueryParams.value,
         dateFrom: formattedDateFrom,
-        dateTo: dateTo,
+        dateTo: dateToNew,
         author: author.value,
         tags: dataTagsSplit.join(","),
         text: searchText.value,
         withFriends: true,
       };
       console.log(formattedDateFrom);
-      console.log(dateTo);
+      console.log(dateToNew);
       dispatch("global/search/searchNews", searchQuery);
     };
 
