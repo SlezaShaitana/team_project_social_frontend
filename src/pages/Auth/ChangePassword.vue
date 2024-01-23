@@ -72,7 +72,7 @@ export default {
     const v$ = useVuelidate(rules, { password, passwordTwo });
 
     onMounted(() => {
-      secret.value = route.params.secret || "Don't have data";
+      secret.value = route.params.secret || "";
     });
 
     const submitHandler = () => {
