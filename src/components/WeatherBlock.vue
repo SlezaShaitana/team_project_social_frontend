@@ -62,8 +62,8 @@ export default {
           (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
-            const url = `/api/weather/get?lat=${lat}&lon=${lon}`;
-            // const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5308edc68a042a4788ed4de34ae08480`;
+            // const url = `/api/weather/get?lat=${lat}&lon=${lon}`;
+            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5308edc68a042a4788ed4de34ae08480`;
 
             fetch(url)
               .then((response) => response.json())
