@@ -49,45 +49,55 @@ export default {
     const { translationsLang } = useTranslations();
 
     const getNameByIdWeather = computed(() =>
-      translateWeather.filter((item) => item.id === weather.value.id)
+        translateWeather.filter((item) => item.id === weather.value.id)
     );
+
+    const OPENCAGE_API_KEY = '4e527b718a0d492799d21247c6af9701';
+
+    const getWeather = () => {
+      fetch('https://api.ipify.org?format=json')
+          .then(response => response.json())
+          .then(data => {
+            const ipAddress = data.ip;
+
+            fetch(`https://api.opencagedata.com/geocode/v1/json?q=${ipAddress}&key=${OPENCAGE_API_KEY}`)
+                .then(response => response.json())
+                .then(locationData => {
+                  const coordinates = locationData.results[0]?.geometry;
+                  if (coordinates) {
+                    const lat = coordinates.lat;
+                    const lon = coordinates.lng;
+
+                    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5308edc68a042a4788ed4de34ae08480`;
+
+                    fetch(weatherUrl)
+                        .then(response => response.json())
+                        .then(weatherData => {
+                          weather.value = {
+                            temp: Math.round(weatherData.main.temp),
+                            temp_min: Math.round(weatherData.main.temp_min),
+                            temp_max: Math.round(weatherData.main.temp_max),
+                            cloudiness: weatherData.clouds.all,
+                            windSpeed: weatherData.wind.speed,
+                            name: weatherData.name,
+                            icon: weatherData.weather[0].icon,
+                            humidity: weatherData.main.humidity,
+                            id: weatherData.weather[0].id,
+                          };
+                        })
+                        .catch(error => console.log(error));
+                  } else {
+                    console.error('Нет данных о координатах');
+                  }
+                })
+                .catch(error => console.log(error));
+          })
+          .catch(error => console.log(error));
+    };
 
     onMounted(() => {
       getWeather();
     });
-
-    const getWeather = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            // const url = `/api/weather/get?lat=${lat}&lon=${lon}`;
-            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5308edc68a042a4788ed4de34ae08480`;
-
-            fetch(url)
-              .then((response) => response.json())
-              .then((data) => {
-                weather.value = {
-                  temp: Math.round(data.main.temp),
-                  temp_min: Math.round(data.main.temp_min),
-                  temp_max: Math.round(data.main.temp_max),
-                  cloudiness: data.clouds.all,
-                  windSpeed: data.wind.speed,
-                  name: data.name,
-                  icon: data.weather[0].icon,
-                  humidity: data.main.humidity,
-                  id: data.weather[0].id,
-                };
-              })
-              .catch((error) => console.log(error));
-          },
-          () => {
-            console.log("Не удалось получить геолокацию");
-          }
-        );
-      }
-    };
 
     return {
       weather,
