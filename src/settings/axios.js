@@ -79,10 +79,10 @@ axios.interceptors.response.use(null, (error) => {
   const errorMessage = error.response.data.error_description || '';
 
   if (error.response) {
-    if (error.response.status === 403) {
-      console.log("Have to refresh Token");
-      store.dispatch("auth/api/refreshToken");
-    }
+    // if (error.response.status === 403) {
+    //   console.log("Have to refresh Token");
+    //   store.dispatch("auth/api/refreshToken");
+    // }
     if (error.response.status === 400) {
       store.dispatch('global/alert/setAlert', {
         status: 'error',
