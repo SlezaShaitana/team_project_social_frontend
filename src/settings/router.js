@@ -15,6 +15,7 @@ router.beforeEach((to, from, next) => {
       });
       return false;
     } else {
+      store.dispatch('auth/api/refreshToken')
       next();
       return false;
     }
