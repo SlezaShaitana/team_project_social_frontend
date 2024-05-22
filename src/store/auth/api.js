@@ -13,7 +13,7 @@ export default {
   },
   getters: {
     apiToken: (state) => state.captchaSecret,
-    isAuthenticated: (state) => { if (!!state.captchaSecret) {dispatch("refreshToken"); return true } return false },
+    isAuthenticated: (state) => !!state.captchaSecret,
     authStatus: (state) => state.status,
     getIsCode: (state) => state.isCode,
   },
