@@ -5,7 +5,7 @@ import store from '@/store';
 axios.defaults.headers['content-type'] = 'application/json';
 axios.defaults.withCredentials = true;
 //axios.defaults.baseURL = '/api/v1/';
-axios.defaults.baseURL = "http://89.104.68.220:8080/api/v1/";
+axios.defaults.baseURL = "http://89.104.68.220:80/api/v1/";
 
 // const setAuthToken = (token) => {
 //   axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
