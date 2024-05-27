@@ -1,5 +1,6 @@
 import auth from '@/requests/auth';
 import requestSettings from '@/requests/settings';
+import global from "@/store/global";
 
 export default {
   namespaced: true,
@@ -71,8 +72,6 @@ export default {
         const newAccessToken = response.data.accessToken;
         const newRefreshToken = response.data.refreshToken;
 
-        console.log("refresh="+newRefreshToken);
-        console.log("acc="+newAccessToken)
 
         localStorage.setItem('user-token', newAccessToken);
         localStorage.setItem('refresh-token', newRefreshToken);
@@ -80,8 +79,9 @@ export default {
         document.cookie = `jwt=${newAccessToken}`;
 
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
-        console.log("auth="+newAccessToken)
-        commit('resetAttempts');
+
+   //     commit('resetAttempts');
+        commit('setJwt');
       } catch {
         console.warn('Cannot get new access token', state.refreshAttempts);
         commit('addAttempts');
