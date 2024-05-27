@@ -71,12 +71,16 @@ export default {
         const newAccessToken = response.data.accessToken;
         const newRefreshToken = response.data.refreshToken;
 
+        console.log("refresh="+newRefreshToken);
+        console.log("acc="+newAccessToken)
+
         localStorage.setItem('user-token', newAccessToken);
         localStorage.setItem('refresh-token', newRefreshToken);
         
         document.cookie = `jwt=${newAccessToken}`;
-        requestSettings.deleteDefaultHeader('Authorization');
+
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
+        console.log("auth="+newAccessToken)
         commit('resetAttempts');
       } catch {
         console.warn('Cannot get new access token', state.refreshAttempts);
