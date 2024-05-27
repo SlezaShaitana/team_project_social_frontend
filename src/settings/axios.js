@@ -13,6 +13,7 @@ axios.defaults.baseURL = "http://89.104.68.220:80/api/v1/";
 
 const token = localStorage.getItem('user-token');
 if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+console.log(localStorage.getItem('user-token'));
 // console.log(jwtDecode(token));
 
 
@@ -77,11 +78,7 @@ if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 axios.interceptors.response.use(null, (error) => {
   console.error(error.response.status);
   console.error(error.response.data.message)
-  console.error(error.response.data.text)
-  console.error(error.response.data)
-  console.error(JSON.parse(error.response.data))
-
-
+  console.error(error.response.data.error_description)
 
   const errorMessage = error.response.data.error_description || ' ';
 
