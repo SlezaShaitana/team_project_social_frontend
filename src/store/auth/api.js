@@ -1,6 +1,6 @@
 import auth from '@/requests/auth';
 import requestSettings from '@/requests/settings';
-import global from "@/store/global";
+
 
 export default {
   namespaced: true,
