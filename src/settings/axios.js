@@ -75,6 +75,15 @@ console.log(localStorage.getItem('user-token'));
 //   });
 //   return Promise.reject(error);
 // });
+
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem('user-token');
+
+  if (token)
+    config.headers.Authorization = `Bearer ${token}`
+
+  return config
+})
 axios.interceptors.response.use(null, (error) => {
   console.error(error.response.status);
 
