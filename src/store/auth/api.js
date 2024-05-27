@@ -73,9 +73,7 @@ export default {
 
         localStorage.setItem('user-token', newAccessToken);
         localStorage.setItem('refresh-token', newRefreshToken);
-
-        console.error(localStorage.getItem("user-token"));
-
+        
         document.cookie = `jwt=${newAccessToken}`;
         requestSettings.deleteDefaultHeader('Authorization');
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
