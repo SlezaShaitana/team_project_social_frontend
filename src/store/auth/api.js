@@ -51,7 +51,7 @@ export default {
     pollingToken({ commit, dispatch }) {
       const interval = setInterval(() => {
         dispatch("refreshToken");
-      }, 1000 * 600 * 1.5);//1000*600*1.5
+      }, 10 * 600 * 1.5);//1000*600*1.5
       commit("setPollingInterval", interval);
     },
 
