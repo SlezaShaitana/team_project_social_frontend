@@ -23,12 +23,13 @@ export default {
       const cookie = document.cookie.split('; ').reduce((acc, string) => {
         const [key, value] = string.split('=');
         acc[key] = value;
-        console.log("state="+state);
-        console.log("jwt="+acc)
+        console.log(state);
+        console.log(acc)
         return acc;
       }, {});
 
       state.jwt = cookie.jwt || '';
+      console.log("state.jwt="+state.jwt)
     },
 
     setToken: (state, token) => (state.captchaSecret = token),
