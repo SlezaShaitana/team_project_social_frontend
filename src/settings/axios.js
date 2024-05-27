@@ -13,7 +13,7 @@ axios.defaults.baseURL = "http://89.104.68.220:80/api/v1/";
 
 const token = localStorage.getItem('user-token');
 if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-console.log(localStorage.getItem('user-token'));
+console.log("token="+token);
 // console.log(jwtDecode(token));
 
 
