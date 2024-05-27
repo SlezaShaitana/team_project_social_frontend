@@ -23,8 +23,6 @@ export default {
       const cookie = document.cookie.split('; ').reduce((acc, string) => {
         const [key, value] = string.split('=');
         acc[key] = value;
-        console.log(state);
-        console.log(acc)
         return acc;
       }, {});
 
@@ -55,7 +53,7 @@ export default {
     pollingToken({ commit, dispatch }) {
       const interval = setInterval(() => {
         dispatch("refreshToken");
-      }, 10 * 600 * 1.5);//1000*600*1.5
+      }, 1000 * 600 * 1.5);//1000*600*1.5
       commit("setPollingInterval", interval);
     },
 
