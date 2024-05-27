@@ -77,6 +77,8 @@ export default {
         document.cookie = `jwt=${newAccessToken}`;
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
         commit('resetAttempts');
+        commit('setToken', newAccessToken);
+        commit('setStatus', 'success');
       } catch {
         console.warn('Cannot get new access token', state.refreshAttempts);
         commit('addAttempts');
@@ -107,7 +109,8 @@ export default {
 
         localStorage.removeItem('user-token');
         localStorage.removeItem('refresh-token');
-        document.cookie = '';
+
+        document.cookie = 'jwt=';
         commit('setJwt');
       }
     },
