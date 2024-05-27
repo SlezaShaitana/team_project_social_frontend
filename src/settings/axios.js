@@ -75,9 +75,14 @@ if (token) axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 //   return Promise.reject(error);
 // });
 axios.interceptors.response.use(null, (error) => {
+  console.error(error.response.status);
+  console.error(error.response.data.message)
+  console.error(error.response.data.text)
+  console.error(error.response.data)
+  console.error(JSON.parse(error.response.data))
 
-  console.error(JSON.parse(error.response));
-  console.error(error.response.status)
+
+
   const errorMessage = error.response.data.error_description || ' ';
 
   if (error.response) {
