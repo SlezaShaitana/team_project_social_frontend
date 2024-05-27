@@ -68,8 +68,8 @@ export default {
       try {
         const response = await auth.refreshToken(refreshToken);
         // response.data
-        const newAccessToken = response.accessToken;
-        const newRefreshToken = response.refreshToken;
+        const newAccessToken = response.data.accessToken;
+        const newRefreshToken = response.data.refreshToken;
 
         localStorage.setItem('user-token', newAccessToken);
         localStorage.setItem('refresh-token', newRefreshToken);
