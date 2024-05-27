@@ -23,6 +23,8 @@ export default {
       const cookie = document.cookie.split('; ').reduce((acc, string) => {
         const [key, value] = string.split('=');
         acc[key] = value;
+        console.log("state="+state);
+        console.log("jwt="+acc)
         return acc;
       }, {});
 
@@ -80,7 +82,7 @@ export default {
 
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
 
-   //     commit('resetAttempts');
+        commit('resetAttempts');
         commit('setJwt');
       } catch {
         console.warn('Cannot get new access token', state.refreshAttempts);
