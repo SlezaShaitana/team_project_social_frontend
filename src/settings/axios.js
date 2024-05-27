@@ -77,8 +77,6 @@ console.log(localStorage.getItem('user-token'));
 // });
 axios.interceptors.response.use(null, (error) => {
   console.error(error.response.status);
-  console.error(error.response.data.message)
-  console.error(error.response.data.error_description)
 
   const errorMessage = error.response.data.error_description || ' ';
 
@@ -94,6 +92,8 @@ axios.interceptors.response.use(null, (error) => {
       });
     }
     if (error.response.status === 401) {
+      console.log('user-token3='+localStorage.getItem('user-token'))
+
       localStorage.removeItem('user-token');
       localStorage.removeItem('refresh-token');
       store.commit('auth/api/setToken', null);
@@ -109,10 +109,12 @@ axios.interceptors.response.use(null, (error) => {
       text: 'Нет ответа от сервера',
     });
   } else {
+    console.log('user-token='+localStorage.getItem('user-token'))
     store.dispatch('global/alert/setAlert', {
       status: 'error',
       text: 'Неизвестная ошибка',
     });
+    console.log('user-token2='+localStorage.getItem('user-token'))
   }
 
   console.error('Axios error', { error });
