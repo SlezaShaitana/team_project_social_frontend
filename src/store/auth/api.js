@@ -107,8 +107,7 @@ export default {
 
         localStorage.removeItem('user-token');
         localStorage.removeItem('refresh-token');
-
-        document.cookie = 'jwt=';
+        document.cookie = '';
         commit('setJwt');
       }
     },
