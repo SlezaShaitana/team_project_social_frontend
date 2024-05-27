@@ -77,14 +77,6 @@ export default {
         document.cookie = `jwt=${newAccessToken}`;
         requestSettings.setDefaultHeader('Authorization', `Bearer ${newAccessToken}`);
         commit('resetAttempts');
-        commit('setToken', newAccessToken);
-        commit('setStatus', 'success');
-        commit('profile/info/setInfo', response.data, {
-          root: true,
-        });
-
-        dispatch('pollingToken');
-
       } catch {
         console.warn('Cannot get new access token', state.refreshAttempts);
         commit('addAttempts');
