@@ -9,14 +9,20 @@ function serializeQueryParams(params) {
 export default {
   // Поиск пользователей по запросу
   users(query) {
-    const serializedParams = serializeQueryParams(query);
-    if (Array.isArray(query)) return axios.get(`account/search?${serializedParams}&isDeleted=false`);
-    if (typeof query === 'string') return axios.get(`account/search?${query}`);
-    if (Array.isArray(query)) return axios.get(`friends?statusCode=FRIEND&${query.join('&')}`);
-    if (typeof query === 'string') return axios.get(`friends?statusCode=FRIEND&${query}`);
-
+    if (typeof query === 'object' && query !== null && !Array.isArray(query)) {
+      const serializedParams = serializeQueryParams(query);
+      return axios.get(`account/search?${serializedParams}&isDeleted=false`);
+    }
+    if (typeof query === 'string') {
+      return axios.get(`account/search?${query}&isDeleted=false`);
+    }
+    if (Array.isArray(query)) {
+      const serializedParams = query.map(serializeQueryParams).join('&');
+      return axios.get(`friends?statusCode=FRIEND&${serializedParams}`);
+    }
     throw new TypeError('Недопустимое значение запроса');
   },
+
 
   recomendationFrends(query) {
     if (Array.isArray(query)) return axios.get(`account/search?${query.join('&')}&isDeleted=false&showFriends=false`)
