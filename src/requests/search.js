@@ -2,33 +2,20 @@ import axios from 'axios';
 
 function serializeQueryParams(params) {
   return Object.keys(params)
-    .map(key => ${encodeURIComponent(key)}=${encodeURIComponent(params[key])})
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
     .join('&');
 }
 
 export default {
   // Поиск пользователей по запросу
   users(query) {
-    let baseURL = '';
-    let serializedParams = '';
+    const serializedParams = serializeQueryParams(query);
+    if (Array.isArray(query)) return axios.get(`account/search?${serializedParams}&isDeleted=false`);
+    if (typeof query === 'string') return axios.get(`account/search?${query}`);
+    if (Array.isArray(query)) return axios.get(`friends?statusCode=FRIEND&${query.join('&')}`);
+    if (typeof query === 'string') return axios.get(`friends?statusCode=FRIEND&${query}`);
 
-    if (typeof query === 'object' && query !== null && !Array.isArray(query)) {
-      serializedParams = serializeQueryParams(query);
-      baseURL = query.path === 'friends' ? 'friends?statusCode=FRIEND' : 'account/search';
-    } else if (Array.isArray(query)) {
-      serializedParams = query.join('&');
-      baseURL = 'account/search';
-    } else if (typeof query === 'string') {
-      serializedParams = query;
-      baseURL = 'account/search';
-    } else {
-      throw new TypeError('Недопустимое значение запроса');
-    }
-    if (baseURL.includes('account/search')) {
-      serializedParams += ${serializedParams ? '&' : ''}isDeleted=false;
-    }
-
-    return axios.get(${baseURL}?${serializedParams});
+    throw new TypeError('Недопустимое значение запроса');
   },
 
   recomendationFrends(query) {
