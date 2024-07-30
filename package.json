@@ -44,7 +44,8 @@
     "@vue/cli-service": "^5.0.8",
     "click-outside-vue3": "^4.0.1",
     "eslint": "^8.50.0",
-    "eslint-plugin-vue": "^9.17.0"
+    "eslint-plugin-vue": "^9.17.0",
+    "yarn": "^1.22.22"
   },
   "eslintConfig": {
     "root": true,
