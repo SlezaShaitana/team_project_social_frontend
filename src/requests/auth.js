@@ -18,7 +18,7 @@ export default {
   },
 
   captcha() {
-    return axios.get('http://79.174.80.200/api/v1/auth/captcha');
+    return axios.get('/api/v1/auth/captcha');
   },
 
   recoveryPassword(data) {
