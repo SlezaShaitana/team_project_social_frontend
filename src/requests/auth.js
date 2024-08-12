@@ -18,7 +18,7 @@ export default {
   },
 
   captcha() {
-    return axios.get('api/v1/auth/captcha');
+    return axios.get('auth/captcha');
   },
 
   recoveryPassword(data) {
