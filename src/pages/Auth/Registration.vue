@@ -219,7 +219,7 @@ export default {
       };
 
       store
-        .dispatch("auth/api/register", data)
+        .dispatch("auth/register", data)
         .then(() => {
           router.push({ name: "RegisterSuccess" });
         })
