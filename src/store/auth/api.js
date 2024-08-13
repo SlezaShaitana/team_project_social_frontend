@@ -41,17 +41,15 @@ export default {
   },
   actions: {
     async register({ dispatch }, user) {
-      // Возвращаем промис, чтобы в компоненте можно было использовать .then() и .catch()
-      return auth.register(user)
-          .then(() => {
-            // В случае успешной регистрации, вызываем дополнительный экшен для установки уведомления
-            dispatch(
-                'global/alert/setAlert',
-                { status: 'success', text: 'Зарегистрирован, делаю логин' },
-                { root: true }
-            );
-          });
+      await auth.register(user);
+
+      dispatch(
+        'global/alert/setAlert',
+        { status: 'success', text: 'Зарегистрирован, делаю логин' },
+        { root: true }
+      );
     },
+    
 
     pollingToken({ commit, dispatch }) {
       const interval = setInterval(() => {
