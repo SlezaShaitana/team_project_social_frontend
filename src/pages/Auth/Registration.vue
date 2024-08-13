@@ -215,6 +215,7 @@ export default {
         firstName: firstName.value,
         lastName: lastName.value,
         captchaCode: captchaCode.value,
+        captchaSecret: captchaSecret.value
       };
 
       store
