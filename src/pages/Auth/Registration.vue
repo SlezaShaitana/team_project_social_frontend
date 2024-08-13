@@ -150,27 +150,27 @@ export default {
     const captchaCode = ref("");
     const captchaSecret = ref("");
     const confirm = ref(false);
-    const isCode = ref(false);
+    const isCode = ref(true);
     const { translationsLang } = useTranslations();
 
     const rules = {
-      confirm: { sameAs: sameAs(() => true) },
-      emailValue: { required, email },
-      password1: { required, minLength: minLength(8) },
-      password2: {
-        required,
-        minLength: minLength(8),
-        sameAsPassword: sameAs(() => password1.value),
-      },
-      firstName: { required, minLength: minLength(3) },
-      lastName: { required, minLength: minLength(3) },
-      captchaCode: {
-        required,
-        isCode() {
-          return isCode.value;
-        },
-      },
-    };
+  confirm: { sameAs: sameAs(() => true) },
+  emailValue: { required, email },
+  password1: { required, minLength: minLength(8) },
+  password2: {
+    required,
+    minLength: minLength(8),
+    sameAsPassword: sameAs(() => password1.value), 
+  },
+  firstName: { required, minLength: minLength(3) },
+  lastName: { required, minLength: minLength(3) },
+  captchaCode: {
+    required,
+    isCode() {
+      return isCode.value;
+    },
+  },
+};
 
     const v$ = useVuelidate(rules, {
       confirm,
