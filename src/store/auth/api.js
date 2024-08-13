@@ -49,6 +49,7 @@ export default {
         { root: true }
       );
     },
+    
 
     pollingToken({ commit, dispatch }) {
       const interval = setInterval(() => {
