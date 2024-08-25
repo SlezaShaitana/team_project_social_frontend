@@ -2,7 +2,7 @@
 // import store from "@/store";
 
 export default {
-  install(app, options) {
+  install(app) {
     let socket;
     const socketApi = {
       connect() {
