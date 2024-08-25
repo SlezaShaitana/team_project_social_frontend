@@ -66,22 +66,19 @@ export default {
           // }
         };
 
-        socket.onerror = (e) => {
-          // Сервер недоступен
-          console.log('connect error!!', {
-            e
-          });
-          return;
-        };
+socket.onerror = (e) => {
+  console.log('connect error!!', e);
+  console.log('Error code:', e.code);
+  console.log('Error message:', e.message);
+};
 
         socket.onclose = (e) => {
-          // Сервер недоступен
-          console.log(`[close] Соединение закрыто чисто, код = ${e.code} причина = ${e.reason}`, {
-            e
-          });
-          return;
+          console.log(`[close] Соединение закрыто чисто, код = ${e.code}, причина = ${e.reason}`, e);
+          setTimeout(() => {
+            this.connect(); // Попытка повторного подключения через 5 секунд
+          }, 5000);
         };
-      },
+
 
       sendMessage(payload) {
         const message = JSON.stringify(payload);
