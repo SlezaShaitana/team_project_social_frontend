@@ -6,7 +6,7 @@ export default {
     let socket;
     const socketApi = {
       connect() {
-        const serverUrl = 'ws://' + options.server + ':8088' + '/api/v1/streaming/ws';
+        const serverUrl = `ws://${options.server}:8088/api/v1/streaming/ws`;
         console.log(serverUrl);
         socket = new WebSocket(serverUrl);
         console.log('function connect');
